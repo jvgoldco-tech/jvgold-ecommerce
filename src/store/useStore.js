@@ -32,6 +32,11 @@ export const useStore = create(
       products: mockProducts,
       catalogs: initialCatalogs,
       siteConfig: {
+        brand: {
+          name: 'JEWELRY PRIME',
+          logoUrl: '',
+          displayMode: 'TEXT' // TEXT | LOGO | BOTH
+        },
         whatsappNumber: '1234567890',
         hero: {
           backgroundImage: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&q=80',
@@ -46,6 +51,11 @@ export const useStore = create(
           subtitle: 'Fine Jewelry · Precision Craftsmanship',
           newsletterTitle: 'Exclusive Access',
           newsletterSubtitle: 'Subscribe to receive notices of private promotions and early access to our newest pieces.'
+        },
+        uiTexts: {
+          newArrivals: 'NEW ARRIVALS',
+          viewCatalog: 'VIEW CATALOG',
+          searchPlaceholder: 'Search...'
         }
       },
       cart: [],
@@ -136,6 +146,12 @@ export const useStore = create(
       }),
 
       // Site Config
+      updateBrandConfig: (config) => set(state => ({
+        siteConfig: { ...state.siteConfig, brand: { ...state.siteConfig.brand, ...config } }
+      })),
+      updateUiTexts: (config) => set(state => ({
+        siteConfig: { ...state.siteConfig, uiTexts: { ...state.siteConfig.uiTexts, ...config } }
+      })),
       updateHeroConfig: (config) => set(state => ({
         siteConfig: { ...state.siteConfig, hero: { ...state.siteConfig.hero, ...config } }
       })),
@@ -147,7 +163,7 @@ export const useStore = create(
       }))
     }),
     {
-      name: 'jewelry-prime-store-v2', // v2 to clear old state
+      name: 'jewelry-prime-store-v3', // bumped version to clear old state due to schema changer old state
     }
   )
 );

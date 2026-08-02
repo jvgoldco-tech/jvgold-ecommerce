@@ -38,7 +38,7 @@ const Hero = () => {
   }, [progress, newProducts.length, nextSlide]);
 
   return (
-    <div className="relative w-full h-[80vh] min-h-[600px] bg-primary overflow-hidden flex flex-col md:flex-row">
+    <div className="relative w-full min-h-screen md:min-h-[600px] md:h-[80vh] bg-primary overflow-hidden flex flex-col md:flex-row py-20 md:py-0">
       {/* Background Image (Covering both but darkened) */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-luminosity"
@@ -71,7 +71,7 @@ const Hero = () => {
           {/* Header & Arrows above the card */}
           <div className="flex flex-col mb-6">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-white/60 text-[10px] tracking-widest uppercase">NEW ARRIVALS</span>
+              <span className="text-white/60 text-[10px] tracking-widest uppercase">{useStore(state => state.siteConfig.uiTexts.newArrivals) || 'NEW ARRIVALS'}</span>
               <div className="flex-1 ml-6 h-[1px] bg-white/10"></div>
             </div>
             

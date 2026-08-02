@@ -8,7 +8,7 @@ const CategoryCoverGrid = () => {
   const products = useStore(state => state.products);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full border-t border-l border-primary/10">
+    <div className="grid grid-cols-2 lg:grid-cols-3 w-full border-t border-l border-primary/10">
       {collections.map(collection => {
         const count = products.filter(p => p.category.toUpperCase() === collection.name.toUpperCase()).length;
         

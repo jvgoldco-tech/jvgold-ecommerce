@@ -55,6 +55,7 @@ const MegaDropdown = ({ title, isOpen, onMouseEnter, onMouseLeave, collections }
 const Header = () => {
   const navigate = useNavigate();
   const collections = useStore(state => state.catalogs.collections);
+  const brandConfig = useStore(state => state.siteConfig.brand);
   const [activeDropdown, setActiveDropdown] = useState(null);
   let timeoutId = null;
 
@@ -74,8 +75,15 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         
         {/* Logo */}
-        <Link to="/" className="text-3xl font-display tracking-widest shrink-0">
-          JEWELRY PRIME
+        <Link to="/" className="shrink-0 flex items-center space-x-3">
+          {(brandConfig.displayMode === 'LOGO' || brandConfig.displayMode === 'BOTH') && brandConfig.logoUrl && (
+            <img src={brandConfig.logoUrl} alt="Logo" className="h-10 object-contain" />
+          )}
+          {(brandConfig.displayMode === 'TEXT' || brandConfig.displayMode === 'BOTH') && (
+            <span className="text-3xl font-display tracking-widest uppercase text-primary">
+              {brandConfig.name}
+            </span>
+          )}
         </Link>
         
         {/* Main Nav */}

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 
+import { useStore } from '../../store/useStore';
+
 const Login = () => {
   const navigate = useNavigate();
+  const brandConfig = useStore(state => state.siteConfig.brand);
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -27,8 +30,15 @@ const Login = () => {
         <span>←</span> <span>BACK</span>
       </button>
 
-      <div className="w-full max-w-md text-center mb-12">
-        <h1 className="font-display text-4xl mb-4 tracking-widest">JEWELRY PRIME</h1>
+      <div className="w-full max-w-md text-center mb-12 flex flex-col items-center">
+        {(brandConfig.displayMode === 'LOGO' || brandConfig.displayMode === 'BOTH') && brandConfig.logoUrl && (
+          <img src={brandConfig.logoUrl} alt="Logo" className="h-12 object-contain mb-4" />
+        )}
+        {(brandConfig.displayMode === 'TEXT' || brandConfig.displayMode === 'BOTH') && (
+          <h1 className="font-display text-4xl mb-4 tracking-widest uppercase text-primary">
+            {brandConfig.name}
+          </h1>
+        )}
         <div className="w-12 h-[1px] bg-accent mx-auto mb-4"></div>
         <span className="text-xs tracking-[0.2em] text-primary/40 uppercase">Administration Panel</span>
       </div>

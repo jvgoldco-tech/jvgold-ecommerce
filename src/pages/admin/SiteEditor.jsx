@@ -17,13 +17,28 @@ const SiteEditor = () => {
   const updateCatalogItem = useStore(state => state.updateCatalogItem);
   const deleteCatalogItem = useStore(state => state.deleteCatalogItem);
 
-  const [activeTab, setActiveTab] = useState('HERO'); // HERO | COLLECTIONS | FOOTER | WHATSAPP
+  const [activeTab, setActiveTab] = useState('BRAND'); // BRAND | TEXTS | HERO | COLLECTIONS | FOOTER | WHATSAPP
   
+  const [brandForm, setBrandForm] = useState(useStore(state => state.siteConfig.brand));
+  const [uiTextsForm, setUiTextsForm] = useState(useStore(state => state.siteConfig.uiTexts));
   const [heroForm, setHeroForm] = useState(heroConfig);
   const [footerForm, setFooterForm] = useState(footerConfig);
   const [waForm, setWaForm] = useState(whatsappNumber);
   const [isSaved, setIsSaved] = useState(true);
   const [expandedCollection, setExpandedCollection] = useState(null);
+
+  const updateBrandConfig = useStore(state => state.updateBrandConfig);
+  const updateUiTexts = useStore(state => state.updateUiTexts);
+
+  const handleBrandChange = (field, value) => {
+    setBrandForm(prev => ({ ...prev, [field]: value }));
+    setIsSaved(false);
+  };
+
+  const handleUiTextsChange = (field, value) => {
+    setUiTextsForm(prev => ({ ...prev, [field]: value }));
+    setIsSaved(false);
+  };
 
   const handleHeroChange = (field, value) => {
     setHeroForm(prev => ({ ...prev, [field]: value }));
@@ -36,6 +51,8 @@ const SiteEditor = () => {
   };
 
   const handleSaveAll = () => {
+    if (activeTab === 'BRAND') updateBrandConfig(brandForm);
+    if (activeTab === 'TEXTS') updateUiTexts(uiTextsForm);
     if (activeTab === 'HERO') updateHeroConfig(heroForm);
     if (activeTab === 'FOOTER') updateFooterConfig(footerForm);
     if (activeTab === 'WHATSAPP') updateWhatsappNumber(waForm);
@@ -52,6 +69,39 @@ const SiteEditor = () => {
   };
 
   const renderLivePreview = () => {
+    if (activeTab === 'BRAND') {
+      return (
+        <div className="absolute inset-0 bg-background flex items-center justify-center p-6">
+           <div className="bg-white p-6 shadow-sm border border-black/5 rounded-xl flex items-center justify-center">
+             {brandForm.displayMode === 'LOGO' || brandForm.displayMode === 'BOTH' ? (
+               <img src={brandForm.logoUrl || 'https://via.placeholder.com/150?text=LOGO'} alt="Brand Logo" className="h-12 mr-4 object-contain" />
+             ) : null}
+             {brandForm.displayMode === 'TEXT' || brandForm.displayMode === 'BOTH' ? (
+               <h1 className="font-display text-2xl tracking-widest text-black">
+                 {brandForm.name}
+               </h1>
+             ) : null}
+           </div>
+        </div>
+      );
+    }
+    
+    if (activeTab === 'TEXTS') {
+      return (
+        <div className="absolute inset-0 bg-background flex flex-col p-6 space-y-4">
+           <div className="bg-white p-4 shadow-sm border border-black/5 rounded-xl text-center">
+             <span className="text-[10px] tracking-widest uppercase mb-2 block">{uiTextsForm.newArrivals}</span>
+           </div>
+           <div className="bg-white p-4 shadow-sm border border-black/5 rounded-xl text-center">
+             <span className="text-[10px] tracking-widest uppercase mb-2 block">{uiTextsForm.viewCatalog}</span>
+           </div>
+           <div className="bg-white p-4 shadow-sm border border-black/5 rounded-xl">
+             <span className="text-gray-400 text-sm block">{uiTextsForm.searchPlaceholder}</span>
+           </div>
+        </div>
+      );
+    }
+
     if (activeTab === 'HERO') {
       return (
         <div className="absolute inset-0 bg-primary flex flex-col p-6">
@@ -135,7 +185,7 @@ const SiteEditor = () => {
 
         {/* Tabs */}
         <div className="flex space-x-8 border-b border-black/5 mb-8 overflow-x-auto whitespace-nowrap">
-          {['HERO', 'COLLECTIONS', 'FOOTER', 'WHATSAPP'].map(tab => (
+          {['BRAND', 'TEXTS', 'HERO', 'COLLECTIONS', 'FOOTER', 'WHATSAPP'].map(tab => (
             <button 
               key={tab}
               onClick={() => { setActiveTab(tab); setIsSaved(true); }}
@@ -149,6 +199,58 @@ const SiteEditor = () => {
 
         <div className="flex-1 overflow-auto pr-4 pb-12">
           
+          {activeTab === 'BRAND' && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Brand Name</label>
+                <input 
+                  type="text" 
+                  value={brandForm.name}
+                  onChange={(e) => handleBrandChange('name', e.target.value)}
+                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Logo URL</label>
+                <input 
+                  type="text" 
+                  value={brandForm.logoUrl}
+                  onChange={(e) => handleBrandChange('logoUrl', e.target.value)}
+                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Display Mode</label>
+                <select 
+                  value={brandForm.displayMode} 
+                  onChange={(e) => handleBrandChange('displayMode', e.target.value)}
+                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent"
+                >
+                  <option value="TEXT">Text Only</option>
+                  <option value="LOGO">Logo Only</option>
+                  <option value="BOTH">Text and Logo</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'TEXTS' && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">"New Arrivals" Text</label>
+                <input type="text" value={uiTextsForm.newArrivals} onChange={(e) => handleUiTextsChange('newArrivals', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
+              </div>
+              <div>
+                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">"View Catalog" Text</label>
+                <input type="text" value={uiTextsForm.viewCatalog} onChange={(e) => handleUiTextsChange('viewCatalog', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
+              </div>
+              <div>
+                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Search Placeholder</label>
+                <input type="text" value={uiTextsForm.searchPlaceholder} onChange={(e) => handleUiTextsChange('searchPlaceholder', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
+              </div>
+            </div>
+          )}
+
           {activeTab === 'HERO' && (
             <div className="space-y-6">
               <div>
@@ -280,7 +382,7 @@ const SiteEditor = () => {
       </div>
 
       {/* Live Preview Panel */}
-      <div className="w-full xl:w-96 flex flex-col shrink-0 sticky top-12 h-[calc(100vh-6rem)]">
+      <div className="w-full xl:w-96 flex flex-col shrink-0 sticky top-12 h-full min-h-[500px]">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs tracking-widest text-primary/60 uppercase flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-2"></span> LIVE PREVIEW</span>
           {!isSaved && activeTab !== 'COLLECTIONS' && <span className="text-[10px] tracking-widest text-accent uppercase">● Unsaved</span>}
