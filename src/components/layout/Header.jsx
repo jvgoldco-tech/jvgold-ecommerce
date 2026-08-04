@@ -116,16 +116,34 @@ const Header = () => {
         </nav>
         
         {/* Actions */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-4">
           <button className="text-primary hover:text-accent transition-colors">
             <Search size={20} />
           </button>
-          <button 
-            onClick={() => navigate('/admin')}
-            className="text-xs font-medium tracking-widest border border-primary/20 px-4 py-2 hover:bg-primary hover:text-white transition-colors"
-          >
-            ADMIN
-          </button>
+          
+          {useStore(state => state.isAuthenticated) ? (
+            <button 
+              onClick={() => navigate('/admin')}
+              className="text-xs font-medium tracking-widest border border-primary/20 px-4 py-2 hover:bg-primary hover:text-white transition-colors"
+            >
+              MY ACCOUNT
+            </button>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={() => navigate('/admin/login')}
+                className="text-xs font-medium tracking-widest px-3 py-2 text-primary hover:text-accent transition-colors uppercase"
+              >
+                Log In
+              </button>
+              <button 
+                onClick={() => navigate('/register')}
+                className="text-xs font-medium tracking-widest border border-primary/20 px-4 py-2 hover:bg-primary hover:text-white transition-colors uppercase"
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
         </div>
       </div>
       

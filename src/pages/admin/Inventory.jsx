@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../../store/useStore';
 import { Plus, Edit2, Trash2, X, Search, Image as ImageIcon, ScanLine, LayoutDashboard } from 'lucide-react';
+import ImageCropper from '../../components/ui/ImageCropper';
+import { TextInputWithCount } from '../../components/ui/InputWithCount';
 
 const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
   const catalogs = useStore(state => state.catalogs);
@@ -64,24 +66,21 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 flex flex-col md:flex-row gap-8">
            {/* Left side: Image & Core */}
            <div className="w-full md:w-1/3 flex flex-col space-y-6">
-             <div className="w-full aspect-[4/5] bg-black/5 flex flex-col items-center justify-center relative border border-dashed border-black/20">
-               {formData.image ? (
-                 <img src={formData.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
-               ) : (
-                 <div className="text-primary/40 flex flex-col items-center">
-                   <ImageIcon size={32} className="mb-2" />
-                   <span className="text-xs uppercase tracking-widest">No Image</span>
-                 </div>
-               )}
-             </div>
+             <ImageCropper 
+                label="Product Image (1:1)"
+                aspectRatio={1} 
+                currentImageUrl={formData.image}
+                onUploadSuccess={(url) => setFormData({ ...formData, image: url })}
+             />
              
              <div>
-                <label className="text-[10px] tracking-widest uppercase text-primary/60 mb-2 block">Image URL 📷</label>
-                <input required type="text" name="image" value={formData.image} onChange={handleChange} className="w-full border border-black/20 px-4 py-2 text-sm focus:border-primary focus:outline-none" />
-             </div>
-             <div>
-                <label className="text-[10px] tracking-widest uppercase text-primary/60 mb-2 block">Product Name *</label>
-                <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border border-black/20 px-4 py-2 text-sm focus:border-primary focus:outline-none" />
+                <TextInputWithCount 
+                  label="Product Name *" 
+                  required 
+                  value={formData.name} 
+                  onChange={(v) => setFormData({ ...formData, name: v })} 
+                  maxLength={50} 
+                />
              </div>
              <div>
                 <label className="text-[10px] tracking-widest uppercase text-primary/60 mb-2 block">Sale Price *</label>

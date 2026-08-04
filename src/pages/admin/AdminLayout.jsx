@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Settings as SettingsIcon, Bell, Search, ScanLine, LayoutDashboard, Settings } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
@@ -7,6 +7,16 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const brandConfig = useStore(state => state.siteConfig.brand);
+  const isAuthenticated = useStore(state => state.isAuthenticated);
+  const isCheckingAuth = useStore(state => state.isCheckingAuth);
+
+  if (isCheckingAuth) {
+    return <div className="min-h-screen flex items-center justify-center">Verificando sesión...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col text-gray-800 font-sans">
@@ -55,16 +65,23 @@ const AdminLayout = () => {
 
         {/* Right: Global Actions & User */}
         <div className="flex items-center space-x-4">
-          <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 hover:text-black shadow-sm border border-black/5 transition-colors">
-            <SettingsIcon size={18} />
-          </button>
           <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 hover:text-black shadow-sm border border-black/5 transition-colors relative">
             <Bell size={18} />
             <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
           <button 
+            onClick={async () => {
+              await useStore.getState().logout();
+              navigate('/admin/login');
+            }}
+            className="text-xs font-medium tracking-widest text-primary/60 hover:text-primary transition-colors uppercase mr-2"
+          >
+            Cerrar sesión
+          </button>
+          <button 
             onClick={() => navigate('/')}
             className="w-10 h-10 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center font-medium shadow-sm transition-transform hover:scale-105"
+            title="Ir a la tienda"
           >
             A
           </button>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { mockProducts, initialCatalogs } from '../data/mockData';
+import api from '../api/axios';
 
 const calculateStatus = (current, min) => {
   if (current <= 0) return '🔴 Agotado';
@@ -28,6 +29,35 @@ const generateSku = (category, products) => {
 export const useStore = create(
   persist(
     (set, get) => ({
+      // Auth State
+      user: null,
+      isAuthenticated: false,
+      isCheckingAuth: true,
+
+      checkAuth: async () => {
+        set({ isCheckingAuth: true });
+        try {
+          const response = await api.get('/auth/me');
+          set({ user: response.data.user, isAuthenticated: true, isCheckingAuth: false });
+        } catch (error) {
+          set({ user: null, isAuthenticated: false, isCheckingAuth: false });
+        }
+      },
+
+      login: (userData) => {
+        set({ user: userData, isAuthenticated: true });
+      },
+
+      logout: async () => {
+        try {
+          await api.post('/auth/logout');
+        } catch (error) {
+          console.error('Logout error:', error);
+        } finally {
+          set({ user: null, isAuthenticated: false });
+        }
+      },
+
       // State
       products: mockProducts,
       catalogs: initialCatalogs,

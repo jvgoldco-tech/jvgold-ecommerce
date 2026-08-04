@@ -1,23 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 import { useStore } from '../../store/useStore';
+import api from '../../api/axios';
 
 const Login = () => {
   const navigate = useNavigate();
   const brandConfig = useStore(state => state.siteConfig.brand);
-  const [username, setUsername] = useState('admin');
+  const login = useStore(state => state.login);
+  
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password === 'jp2024') {
-      navigate('/admin/inventory');
-    } else {
-      setError('Invalid credentials. Hint: use jp2024');
+    setError('');
+    setLoading(true);
+    
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      login(response.data.user);
+      navigate('/admin');
+    } catch (err) {
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || 'Invalid credentials');
+      } else {
+        setError('Connection error');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,11 +62,11 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           
           <div>
-            <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Username</label>
+            <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Email</label>
             <input 
-              type="text" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-[#f9f9f9] border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
             />
           </div>
@@ -78,12 +93,11 @@ const Login = () => {
 
           <button 
             type="submit" 
-            className="w-full bg-primary text-white text-xs tracking-widest py-4 hover:bg-black transition-colors uppercase font-medium"
+            disabled={loading}
+            className="w-full bg-primary text-white text-xs tracking-widest py-4 hover:bg-black transition-colors uppercase font-medium flex justify-center items-center"
           >
-            Sign In
+            {loading ? <Loader2 className="animate-spin" size={16} /> : 'Sign In'}
           </button>
-          
-          <p className="text-center text-primary/40 text-[10px] italic font-serif">Demo: password is "jp2024"</p>
         </form>
       </div>
     </div>

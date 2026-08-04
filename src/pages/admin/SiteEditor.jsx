@@ -1,6 +1,50 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { Trash2, Plus, MessageCircle } from 'lucide-react';
+import ImageCropper from '../../components/ui/ImageCropper';
+
+const TextInputWithCount = ({ label, value, onChange, maxLength, type = 'text', ...props }) => {
+  const remaining = maxLength - (value ? value.length : 0);
+  return (
+    <div>
+      <label className="flex justify-between items-end mb-2">
+        <span className="block text-[10px] tracking-widest text-primary/60 uppercase">{label}</span>
+        <span className={`text-[10px] tracking-widest ${remaining <= 10 ? 'text-red-500 font-bold' : 'text-primary/40'}`}>
+          {remaining} restantes
+        </span>
+      </label>
+      <input 
+        type={type}
+        value={value} 
+        onChange={(e) => onChange(e.target.value.substring(0, maxLength))} 
+        maxLength={maxLength}
+        className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
+        {...props}
+      />
+    </div>
+  );
+};
+
+const TextAreaWithCount = ({ label, value, onChange, maxLength, ...props }) => {
+  const remaining = maxLength - (value ? value.length : 0);
+  return (
+    <div>
+      <label className="flex justify-between items-end mb-2">
+        <span className="block text-[10px] tracking-widest text-primary/60 uppercase">{label}</span>
+        <span className={`text-[10px] tracking-widest ${remaining <= 20 ? 'text-red-500 font-bold' : 'text-primary/40'}`}>
+          {remaining} restantes
+        </span>
+      </label>
+      <textarea 
+        value={value} 
+        onChange={(e) => onChange(e.target.value.substring(0, maxLength))} 
+        maxLength={maxLength}
+        className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
+        {...props}
+      />
+    </div>
+  );
+};
 
 const SiteEditor = () => {
   const heroConfig = useStore(state => state.siteConfig.hero);
@@ -148,8 +192,8 @@ const SiteEditor = () => {
             <span className="text-accent text-[8px] tracking-widest uppercase mb-2 block">{footerForm.newsletterTitle}</span>
             <p className="text-white/80 text-[10px] mb-4">{footerForm.newsletterSubtitle}</p>
             <div className="border-b border-white/20 pb-1 flex justify-between">
-              <span className="text-white/40 text-[10px]">email@example.com</span>
-              <span className="text-white text-[8px] uppercase">Subscribe</span>
+               <span className="text-white/40 text-[10px]">email@example.com</span>
+               <span className="text-white text-[8px] uppercase">Subscribe</span>
             </div>
           </div>
         </div>
@@ -201,24 +245,18 @@ const SiteEditor = () => {
           
           {activeTab === 'BRAND' && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Brand Name</label>
-                <input 
-                  type="text" 
-                  value={brandForm.name}
-                  onChange={(e) => handleBrandChange('name', e.target.value)}
-                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Logo URL</label>
-                <input 
-                  type="text" 
-                  value={brandForm.logoUrl}
-                  onChange={(e) => handleBrandChange('logoUrl', e.target.value)}
-                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
-                />
-              </div>
+              <TextInputWithCount 
+                label="Brand Name" 
+                value={brandForm.name} 
+                onChange={(v) => handleBrandChange('name', v)} 
+                maxLength={30} 
+              />
+              <ImageCropper 
+                label="Logo Image (Proporción libre)"
+                aspectRatio={null} 
+                currentImageUrl={brandForm.logoUrl}
+                onUploadSuccess={(url) => handleBrandChange('logoUrl', url)}
+              />
               <div>
                 <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Display Mode</label>
                 <select 
@@ -236,60 +274,28 @@ const SiteEditor = () => {
 
           {activeTab === 'TEXTS' && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">"New Arrivals" Text</label>
-                <input type="text" value={uiTextsForm.newArrivals} onChange={(e) => handleUiTextsChange('newArrivals', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-              </div>
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">"View Catalog" Text</label>
-                <input type="text" value={uiTextsForm.viewCatalog} onChange={(e) => handleUiTextsChange('viewCatalog', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-              </div>
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Search Placeholder</label>
-                <input type="text" value={uiTextsForm.searchPlaceholder} onChange={(e) => handleUiTextsChange('searchPlaceholder', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-              </div>
+              <TextInputWithCount label='"New Arrivals" Text' value={uiTextsForm.newArrivals} onChange={v => handleUiTextsChange('newArrivals', v)} maxLength={40} />
+              <TextInputWithCount label='"View Catalog" Text' value={uiTextsForm.viewCatalog} onChange={v => handleUiTextsChange('viewCatalog', v)} maxLength={40} />
+              <TextInputWithCount label='Search Placeholder' value={uiTextsForm.searchPlaceholder} onChange={v => handleUiTextsChange('searchPlaceholder', v)} maxLength={50} />
             </div>
           )}
 
           {activeTab === 'HERO' && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Background Image URL</label>
-                <input 
-                  type="text" 
-                  value={heroForm.backgroundImage}
-                  onChange={(e) => handleHeroChange('backgroundImage', e.target.value)}
-                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent mb-2" 
-                />
-                {heroForm.backgroundImage && (
-                  <div className="w-full h-24 bg-gray-100 overflow-hidden border border-black/5">
-                    <img src={heroForm.backgroundImage} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-              </div>
+              <ImageCropper 
+                label="Background Image (Hero 16:9)"
+                aspectRatio={16/9} 
+                currentImageUrl={heroForm.backgroundImage}
+                onUploadSuccess={(url) => handleHeroChange('backgroundImage', url)}
+              />
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Headline</label>
-                  <input type="text" value={heroForm.headline} onChange={(e) => handleHeroChange('headline', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-                </div>
-                <div>
-                  <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Highlighted Word</label>
-                  <input type="text" value={heroForm.highlightedWord} onChange={(e) => handleHeroChange('highlightedWord', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-                </div>
+                <TextInputWithCount label='Headline' value={heroForm.headline} onChange={v => handleHeroChange('headline', v)} maxLength={50} />
+                <TextInputWithCount label='Highlighted Word' value={heroForm.highlightedWord} onChange={v => handleHeroChange('highlightedWord', v)} maxLength={30} />
               </div>
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Subtitle</label>
-                <textarea rows="3" value={heroForm.subtitle} onChange={(e) => handleHeroChange('subtitle', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-              </div>
+              <TextAreaWithCount label='Subtitle' rows="3" value={heroForm.subtitle} onChange={v => handleHeroChange('subtitle', v)} maxLength={150} />
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">CTA Button Label</label>
-                  <input type="text" value={heroForm.ctaLabel} onChange={(e) => handleHeroChange('ctaLabel', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-                </div>
-                <div>
-                  <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Footer Tagline</label>
-                  <input type="text" value={heroForm.footerTagline} onChange={(e) => handleHeroChange('footerTagline', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-                </div>
+                <TextInputWithCount label='CTA Button Label' value={heroForm.ctaLabel} onChange={v => handleHeroChange('ctaLabel', v)} maxLength={30} />
+                <TextInputWithCount label='Footer Tagline' value={heroForm.footerTagline} onChange={v => handleHeroChange('footerTagline', v)} maxLength={80} />
               </div>
             </div>
           )}
@@ -297,38 +303,23 @@ const SiteEditor = () => {
           {activeTab === 'FOOTER' && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Brand Title</label>
-                  <input type="text" value={footerForm.title} onChange={(e) => handleFooterChange('title', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-                </div>
-                <div>
-                  <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Brand Subtitle</label>
-                  <input type="text" value={footerForm.subtitle} onChange={(e) => handleFooterChange('subtitle', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-                </div>
+                <TextInputWithCount label='Brand Title' value={footerForm.title} onChange={v => handleFooterChange('title', v)} maxLength={50} />
+                <TextInputWithCount label='Brand Subtitle' value={footerForm.subtitle} onChange={v => handleFooterChange('subtitle', v)} maxLength={100} />
               </div>
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Newsletter Title</label>
-                <input type="text" value={footerForm.newsletterTitle} onChange={(e) => handleFooterChange('newsletterTitle', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-              </div>
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Newsletter Subtitle</label>
-                <textarea rows="3" value={footerForm.newsletterSubtitle} onChange={(e) => handleFooterChange('newsletterSubtitle', e.target.value)} className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" />
-              </div>
+              <TextInputWithCount label='Newsletter Title' value={footerForm.newsletterTitle} onChange={v => handleFooterChange('newsletterTitle', v)} maxLength={50} />
+              <TextAreaWithCount label='Newsletter Subtitle' rows="3" value={footerForm.newsletterSubtitle} onChange={v => handleFooterChange('newsletterSubtitle', v)} maxLength={150} />
             </div>
           )}
 
           {activeTab === 'WHATSAPP' && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">WhatsApp Number</label>
-                <p className="text-xs text-primary/50 mb-2">Include your country code, without the + sign. Example: 1234567890</p>
-                <input 
-                  type="text" 
-                  value={waForm} 
-                  onChange={(e) => { setWaForm(e.target.value); setIsSaved(false); }} 
-                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
-                />
-              </div>
+              <TextInputWithCount 
+                label="WhatsApp Number" 
+                value={waForm} 
+                onChange={(v) => { setWaForm(v); setIsSaved(false); }} 
+                maxLength={20} 
+              />
+              <p className="text-xs text-primary/50 mt-2">Include your country code, without the + sign. Example: 1234567890</p>
             </div>
           )}
 
@@ -360,18 +351,25 @@ const SiteEditor = () => {
                   </div>
                   {expandedCollection === c.id && (
                     <div className="p-4 border-t border-black/5 bg-[#fbfbfb] space-y-4">
-                      <div>
-                        <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Name</label>
-                        <input type="text" value={c.name} onChange={(e) => updateCatalogItem('collections', c, { ...c, name: e.target.value })} className="w-full bg-white border border-black/10 px-3 py-2 text-sm focus:outline-none focus:border-accent" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Cover Image URL</label>
-                        <input type="text" value={c.coverImage} onChange={(e) => updateCatalogItem('collections', c, { ...c, coverImage: e.target.value })} className="w-full bg-white border border-black/10 px-3 py-2 text-sm focus:outline-none focus:border-accent" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Description</label>
-                        <textarea rows="3" value={c.description} onChange={(e) => updateCatalogItem('collections', c, { ...c, description: e.target.value })} className="w-full bg-white border border-black/10 px-3 py-2 text-sm focus:outline-none focus:border-accent" />
-                      </div>
+                      <TextInputWithCount 
+                        label="Name" 
+                        value={c.name} 
+                        onChange={v => updateCatalogItem('collections', c, { ...c, name: v })} 
+                        maxLength={40} 
+                      />
+                      <ImageCropper 
+                        label="Cover Image (Proporción 3:4)"
+                        aspectRatio={3/4} 
+                        currentImageUrl={c.coverImage}
+                        onUploadSuccess={(url) => updateCatalogItem('collections', c, { ...c, coverImage: url })}
+                      />
+                      <TextAreaWithCount 
+                        label="Description" 
+                        rows="3" 
+                        value={c.description} 
+                        onChange={v => updateCatalogItem('collections', c, { ...c, description: v })} 
+                        maxLength={150} 
+                      />
                     </div>
                   )}
                 </div>

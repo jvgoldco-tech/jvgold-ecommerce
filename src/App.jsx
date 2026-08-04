@@ -1,5 +1,5 @@
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import Home from './pages/client/Home'
 import CategoryDetail from './pages/client/CategoryDetail'
@@ -9,12 +9,22 @@ import NewArrivals from './pages/client/NewArrivals'
 import Cart from './pages/client/Cart'
 import AdminLayout from './pages/admin/AdminLayout'
 import Login from './pages/admin/Login'
+import Register from './pages/client/Register'
+import ForgotPassword from './pages/client/ForgotPassword'
+import ResetPassword from './pages/client/ResetPassword'
 import Inventory from './pages/admin/Inventory'
 import SiteEditor from './pages/admin/SiteEditor'
 import Settings from './pages/admin/Settings'
 import Catalogs from './pages/admin/Catalogs'
+import { useStore } from './store/useStore'
 
 function App() {
+  const checkAuth = useStore(state => state.checkAuth);
+  
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
@@ -26,8 +36,13 @@ function App() {
         <Route path="cart" element={<Cart />} />
       </Route>
       
-      {/* Admin Routes */}
+      {/* Auth Routes */}
       <Route path="/admin/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Inventory />} />
         <Route path="catalogs" element={<Catalogs />} />
