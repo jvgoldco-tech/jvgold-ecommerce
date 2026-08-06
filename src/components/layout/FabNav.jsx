@@ -21,7 +21,7 @@ const FabNav = () => {
       <div 
         className={`mb-4 overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 max-h-[400px] translate-y-0' : 'opacity-0 max-h-0 translate-y-4 pointer-events-none'}`}
       >
-        <div className="bg-[#1c0f16]/30 backdrop-blur-3xl shadow-[0_15px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] border border-[#BF953F]/40 rounded-3xl p-4 flex flex-col min-w-[200px]">
+        <div className="bg-[#1c0f16]/30 backdrop-blur-3xl transform-gpu shadow-[0_15px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] border border-[#BF953F]/40 rounded-3xl p-4 flex flex-col min-w-[200px]">
           <div className="flex justify-between items-center mb-4 pb-2 border-b border-[#BF953F]/20">
             <span className="text-white text-xs tracking-[0.2em] uppercase font-medium">Collections</span>
             <button onClick={() => setIsMenuOpen(false)} className="text-white/60 hover:text-white">
@@ -72,7 +72,7 @@ const FabNav = () => {
       </div>
 
       {/* Glass container - highly translucent with heavy blur and a direct gold border */}
-      <div className="flex items-center space-x-3 sm:space-x-5 px-4 sm:px-6 py-2 rounded-full bg-[#1c0f16]/30 backdrop-blur-3xl shadow-[0_15px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] border border-[#BF953F]/40">
+      <div className="flex items-center space-x-3 sm:space-x-5 px-4 sm:px-6 py-2 rounded-full bg-[#1c0f16]/30 backdrop-blur-3xl transform-gpu shadow-[0_15px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] border border-[#BF953F]/40">
         
         <button 
           onClick={() => { setIsMenuOpen(false); navigate('/new-arrivals'); }} 
@@ -107,7 +107,7 @@ const FabNav = () => {
           title="Colecciones" 
           className={`relative w-10 h-10 rounded-full flex items-center justify-center p-[1px] ${goldGradient} shadow-[0_0_10px_rgba(191,149,63,0.3)] hover:scale-105 transition-transform duration-300 mx-1`}
         >
-          <div className="w-full h-full rounded-full bg-[#1c0f16]/40 backdrop-blur-xl flex items-center justify-center border border-black/30 shadow-inner">
+          <div className="w-full h-full rounded-full bg-[#1c0f16]/40 backdrop-blur-xl transform-gpu flex items-center justify-center border border-black/30 shadow-inner">
             <Grid3X3 size={18} strokeWidth={1.5} className={isMenuOpen ? "text-white" : iconColor} />
           </div>
         </button>

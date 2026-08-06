@@ -7,7 +7,7 @@ const sendVerificationEmail = async (email, token) => {
   
   console.log(`\n==============================================`);
   console.log(`[EMAIL SIMULATION] To: ${email}`);
-  console.log(`Subject: Verifica tu cuenta en Jewelry Prime`);
+  console.log(`Subject: Verifica tu cuenta en JV GOLD & CO LLC`);
   console.log(`Body: Por favor visita este enlace para verificar tu cuenta: \n${verifyUrl}`);
   console.log(`==============================================\n`);
 
@@ -16,7 +16,7 @@ const sendVerificationEmail = async (email, token) => {
   await resend.emails.send({
     from: 'onboarding@resend.dev', // Cambiar por tu dominio verificado
     to: email,
-    subject: 'Verifica tu cuenta en Jewelry Prime',
+    subject: 'Verifica tu cuenta en JV GOLD & CO LLC',
     html: `<p>Haz clic en este enlace para activar tu cuenta:</p><a href="${verifyUrl}">${verifyUrl}</a>`
   });
   */

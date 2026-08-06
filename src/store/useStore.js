@@ -63,7 +63,7 @@ export const useStore = create(
       catalogs: initialCatalogs,
       siteConfig: {
         brand: {
-          name: 'JEWELRY PRIME',
+          name: 'JV GOLD & CO LLC',
           logoUrl: '',
           displayMode: 'TEXT' // TEXT | LOGO | BOTH
         },
@@ -75,9 +75,11 @@ export const useStore = create(
           subtitle: 'Every jewel tells a story of craftsmanship and distinction.',
           ctaLabel: 'EXPLORE COLLECTION',
           footerTagline: 'COLLECTION 2026 · ONE-OF-A-KIND PIECES',
+          carouselProducts: [],
+          autoplayInterval: 5000,
         },
         footer: {
-          title: 'JEWELRY PRIME',
+          title: 'JV GOLD & CO LLC',
           subtitle: 'Fine Jewelry · Precision Craftsmanship',
           newsletterTitle: 'Exclusive Access',
           newsletterSubtitle: 'Subscribe to receive notices of private promotions and early access to our newest pieces.'
@@ -193,7 +195,7 @@ export const useStore = create(
       }))
     }),
     {
-      name: 'jewelry-prime-store-v3', // bumped version to clear old state due to schema changer old state
+      name: 'jv-gold-co-store-v5', // bumped version to clear old state due to schema changer old state
     }
   )
 );

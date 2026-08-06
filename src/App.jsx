@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
+import ErrorBoundary from './components/ErrorBoundary'
 import MainLayout from './components/layout/MainLayout'
 import Home from './pages/client/Home'
 import CategoryDetail from './pages/client/CategoryDetail'
@@ -26,8 +28,10 @@ function App() {
   }, [checkAuth]);
 
   return (
-    <Routes>
-      <Route path="/" element={<MainLayout />}>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="category/:categoryId" element={<CategoryDetail />} />
         <Route path="favorites" element={<Favorites />} />
@@ -50,6 +54,8 @@ function App() {
         <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
+    </ErrorBoundary>
+    </HelmetProvider>
   )
 }
 

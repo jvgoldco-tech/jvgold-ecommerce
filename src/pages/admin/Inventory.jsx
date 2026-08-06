@@ -59,7 +59,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-black/10 flex justify-between items-center bg-[#fbfbfb]">
-          <h2 className="text-2xl font-display">{product ? 'Edit Product' : 'Quick Add Product'}</h2>
+          <h3 className="text-2xl font-display">{product ? 'Edit Product' : 'Quick Add Product'}</h3>
           <button onClick={onClose} className="text-primary/40 hover:text-primary"><X size={24} /></button>
         </div>
         
@@ -162,8 +162,8 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
         </form>
 
         <div className="p-6 border-t border-black/10 bg-[#fbfbfb] flex justify-end space-x-4">
-          <button onClick={onClose} className="px-6 py-3 border border-black/20 text-xs tracking-widest uppercase hover:bg-black/5">Cancel</button>
-          <button onClick={handleSubmit} className="px-6 py-3 bg-primary text-white text-xs tracking-widest uppercase hover:bg-black">Save Product</button>
+          <button onClick={onClose} className="px-6 py-3 border border-black/20 text-xs tracking-widest uppercase hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-accent">Cancel</button>
+          <button onClick={handleSubmit} className="px-6 py-3 bg-primary text-white text-xs tracking-widest uppercase hover:bg-black focus:outline-none focus:ring-2 focus:ring-accent">Save Product</button>
         </div>
       </div>
     </div>
@@ -375,7 +375,7 @@ const Inventory = () => {
                 <div className="hidden md:block w-px h-10 bg-gray-100 mx-6"></div>
 
                 {/* Meta 1: Date */}
-                <div className="w-full md:w-1/4 mb-4 md:mb-0">
+                <div className="hidden md:block w-1/4 mb-4 md:mb-0">
                   <span className="text-[8px] uppercase tracking-wider text-gray-400 font-bold block mb-1">Added Date</span>
                   <span className="text-xs font-medium text-gray-800">
                     {new Date(product.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -386,7 +386,7 @@ const Inventory = () => {
                 <div className="hidden md:block w-px h-10 bg-gray-100 mx-6"></div>
 
                 {/* Meta 2: Location */}
-                <div className="w-full md:w-1/4 mb-4 md:mb-0">
+                <div className="hidden md:block w-1/4 mb-4 md:mb-0">
                   <span className="text-[8px] uppercase tracking-wider text-gray-400 font-bold block mb-1">Warehouse Location</span>
                   <span className="text-xs font-medium text-gray-800">{product.location || 'Warehouse A'}</span>
                 </div>

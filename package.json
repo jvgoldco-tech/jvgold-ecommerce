@@ -1,5 +1,5 @@
 {
-  "name": "jewelry-prime",
+  "name": "jv-gold-co",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,6 +16,8 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-easy-crop": "^6.2.3",
+    "react-error-boundary": "^6.1.2",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.18.2",
     "zustand": "^5.0.14"
   },

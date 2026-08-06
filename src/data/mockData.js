@@ -13,7 +13,7 @@ export const initialCatalogs = {
   stones: ['None', 'Zirconia', 'Diamond', 'Pearl', 'Emerald', 'Ruby', 'Crystal', 'Other'],
   sizes: ['5', '6', '7', '8', '9', '10', '11', 'Small', 'Medium', 'Large', 'Adjustable', 'N/A'],
   locations: ['Showcase A', 'Showcase B', 'Safe', 'Warehouse', 'Window Display'],
-  brands: ['Jewelry Prime', 'Rolex', 'Cartier', 'Generic']
+  brands: ['JV GOLD & CO LLC', 'Rolex', 'Cartier', 'Generic']
 };
 
 export const mockProducts = [
@@ -24,7 +24,7 @@ export const mockProducts = [
     category: 'Rings',
     collectionId: 'c1',
     gender: 'Women',
-    brand: 'Jewelry Prime',
+    brand: 'JV GOLD & CO LLC',
     materials: ['18K Gold'],
     color: 'Gold',
     stone: 'Diamond',
@@ -54,7 +54,7 @@ export const mockProducts = [
     category: 'Bracelets',
     collectionId: 'c3',
     gender: 'Women',
-    brand: 'Jewelry Prime',
+    brand: 'JV GOLD & CO LLC',
     materials: ['18K Gold'],
     color: 'Rose Gold',
     stone: 'Ruby',
@@ -84,7 +84,7 @@ export const mockProducts = [
     category: 'Earrings',
     collectionId: 'c5',
     gender: 'Women',
-    brand: 'Jewelry Prime',
+    brand: 'JV GOLD & CO LLC',
     materials: ['18K Gold'],
     color: 'White',
     stone: 'Diamond',

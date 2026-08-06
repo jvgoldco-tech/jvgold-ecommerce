@@ -19,7 +19,7 @@ const ScrollNavLink = ({ to, children, className = '' }) => {
   );
 };
 
-const MegaDropdown = ({ title, isOpen, onMouseEnter, onMouseLeave, collections }) => {
+const MegaDropdown = React.memo(({ title, isOpen, onMouseEnter, onMouseLeave, collections }) => {
   return (
     <div 
       onMouseEnter={onMouseEnter}
@@ -50,7 +50,7 @@ const MegaDropdown = ({ title, isOpen, onMouseEnter, onMouseLeave, collections }
       </div>
     </div>
   );
-};
+});
 
 const Header = () => {
   const navigate = useNavigate();

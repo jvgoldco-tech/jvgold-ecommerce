@@ -52,11 +52,11 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Content */}
-      <div className="p-6 text-center">
+      <div className="p-4 md:p-6 text-center">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-display text-lg mb-1 group-hover:text-accent transition-colors">{product.name}</h3>
-            <span className="text-[10px] tracking-widest uppercase text-primary/40 block mb-2">{product.category}</span>
+            <h3 className="font-display text-sm md:text-lg mb-1 group-hover:text-accent transition-colors">{product.name}</h3>
+            <span className="text-[8px] md:text-[10px] tracking-widest uppercase text-primary/40 block mb-2">{product.category}</span>
           </div>
         </div>
         
@@ -69,7 +69,7 @@ const ProductCard = ({ product }) => {
               <span className="text-accent font-medium">${product.promoPrice.toLocaleString()}</span>
             </div>
           ) : (
-            <span className="text-primary font-medium">${(product.priceSale || 0).toLocaleString()}</span>
+            <span className="text-primary font-medium text-sm md:text-base">${(product.priceSale || 0).toLocaleString()}</span>
           )}
         </div>
       </div>

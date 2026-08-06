@@ -1,10 +1,15 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import Hero from '../../components/home/Hero';
 import CategoryCoverGrid from '../../components/collections/CategoryCoverGrid';
 
 const Home = () => {
   return (
     <div className="w-full bg-background relative">
+      <Helmet>
+        <title>JV GOLD & CO LLC - Alta Relojería y Joyería Exclusiva</title>
+        <meta name="description" content="Descubre la colección más exclusiva de joyería, anillos, relojes y accesorios premium. Elegancia intemporal." />
+      </Helmet>
       {/* Sticky Hero for parallax effect (only on md+ screens to avoid mobile overlap) */}
       <div className="relative md:sticky top-0 md:top-20 z-0 md:h-[80vh] md:min-h-[600px]">
         <Hero />

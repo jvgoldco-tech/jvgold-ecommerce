@@ -1,56 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { Trash2, Plus, MessageCircle } from 'lucide-react';
-import ImageCropper from '../../components/ui/ImageCropper';
-
-const TextInputWithCount = ({ label, value, onChange, maxLength, type = 'text', ...props }) => {
-  const remaining = maxLength - (value ? value.length : 0);
-  return (
-    <div>
-      <label className="flex justify-between items-end mb-2">
-        <span className="block text-[10px] tracking-widest text-primary/60 uppercase">{label}</span>
-        <span className={`text-[10px] tracking-widest ${remaining <= 10 ? 'text-red-500 font-bold' : 'text-primary/40'}`}>
-          {remaining} restantes
-        </span>
-      </label>
-      <input 
-        type={type}
-        value={value} 
-        onChange={(e) => onChange(e.target.value.substring(0, maxLength))} 
-        maxLength={maxLength}
-        className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
-        {...props}
-      />
-    </div>
-  );
-};
-
-const TextAreaWithCount = ({ label, value, onChange, maxLength, ...props }) => {
-  const remaining = maxLength - (value ? value.length : 0);
-  return (
-    <div>
-      <label className="flex justify-between items-end mb-2">
-        <span className="block text-[10px] tracking-widest text-primary/60 uppercase">{label}</span>
-        <span className={`text-[10px] tracking-widest ${remaining <= 20 ? 'text-red-500 font-bold' : 'text-primary/40'}`}>
-          {remaining} restantes
-        </span>
-      </label>
-      <textarea 
-        value={value} 
-        onChange={(e) => onChange(e.target.value.substring(0, maxLength))} 
-        maxLength={maxLength}
-        className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
-        {...props}
-      />
-    </div>
-  );
-};
+import { MessageCircle } from 'lucide-react';
+import { BrandEditor, TextsEditor, HeroEditor, FooterEditor, WhatsappEditor, CollectionsEditor } from '../../components/admin/editor/EditorTabs';
 
 const SiteEditor = () => {
   const heroConfig = useStore(state => state.siteConfig.hero);
   const footerConfig = useStore(state => state.siteConfig.footer);
   const whatsappNumber = useStore(state => state.siteConfig.whatsappNumber);
   const catalogs = useStore(state => state.catalogs);
+  const products = useStore(state => state.products);
   const collections = catalogs.collections;
 
   const updateHeroConfig = useStore(state => state.updateHeroConfig);
@@ -91,6 +49,11 @@ const SiteEditor = () => {
 
   const handleFooterChange = (field, value) => {
     setFooterForm(prev => ({ ...prev, [field]: value }));
+    setIsSaved(false);
+  };
+
+  const handleWaChange = (value) => {
+    setWaForm(value);
     setIsSaved(false);
   };
 
@@ -147,18 +110,38 @@ const SiteEditor = () => {
     }
 
     if (activeTab === 'HERO') {
+      const configuredProducts = heroForm.carouselProducts?.map(id => products.find(p => p.id === id)).filter(Boolean) || [];
+      const previewProducts = configuredProducts.length > 0 ? configuredProducts : products.filter(p => p.isNew);
+      const previewProduct = previewProducts[0];
+
       return (
-        <div className="absolute inset-0 bg-primary flex flex-col p-6">
+        <div className="absolute inset-0 bg-primary flex flex-col p-6 overflow-hidden">
           <div className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity" style={{ backgroundImage: `url(${heroForm.backgroundImage})` }} />
           <div className="relative z-10 flex-1 flex flex-col justify-center">
             <span className="text-accent text-[8px] tracking-widest mb-2">FINE JEWELRY</span>
             <h1 className="text-white font-display text-2xl leading-tight mb-2">
               {heroForm.headline} <span className="text-accent italic font-serif">{heroForm.highlightedWord}</span>
             </h1>
-            <p className="text-white/80 font-serif italic text-xs mb-4">{heroForm.subtitle}</p>
+            <p className="text-white/80 font-serif italic text-xs mb-4 max-w-[200px] line-clamp-2">{heroForm.subtitle}</p>
             <div>
               <button className="border border-white/40 text-white text-[8px] tracking-widest px-3 py-1">{heroForm.ctaLabel}</button>
             </div>
+            
+            {/* Miniature Carousel Preview */}
+            {previewProduct && (
+              <div className="absolute bottom-4 right-4 w-32 bg-[#16110f] border border-white/5 shadow-2xl flex flex-col overflow-hidden">
+                <div className="w-full h-[2px] bg-white/10 relative">
+                  <div className="absolute top-0 left-0 h-full w-1/3 bg-accent" />
+                </div>
+                <div className="w-full aspect-[5/4] bg-white/5 relative">
+                  <img src={previewProduct.image} alt={previewProduct.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="p-2">
+                  <h4 className="text-white font-display text-[10px] truncate">{previewProduct.name}</h4>
+                  <span className="text-white/40 text-[8px] block mt-1">1 / {previewProducts.length}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -219,21 +202,21 @@ const SiteEditor = () => {
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-12 h-full">
+    <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 h-full p-2 sm:p-0">
       {/* Editor Panel */}
       <div className="flex-1 xl:max-w-2xl flex flex-col">
-        <div className="mb-8">
-          <h2 className="text-3xl font-display mb-2">Site Editor</h2>
-          <span className="text-xs tracking-widest text-primary/40 uppercase">CUSTOMIZE STOREFRONT PAGES</span>
+        <div className="mb-6 lg:mb-8">
+          <h2 className="text-2xl lg:text-3xl font-display mb-1 lg:mb-2">Site Editor</h2>
+          <span className="text-[10px] lg:text-xs tracking-widest text-primary/40 uppercase">CUSTOMIZE STOREFRONT PAGES</span>
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-8 border-b border-black/5 mb-8 overflow-x-auto whitespace-nowrap">
+        <div className="flex space-x-6 lg:space-x-8 border-b border-black/5 mb-6 lg:mb-8 overflow-x-auto whitespace-nowrap hide-scrollbar">
           {['BRAND', 'TEXTS', 'HERO', 'COLLECTIONS', 'FOOTER', 'WHATSAPP'].map(tab => (
             <button 
               key={tab}
               onClick={() => { setActiveTab(tab); setIsSaved(true); }}
-              className={`pb-4 text-xs tracking-widest uppercase transition-colors relative ${activeTab === tab ? 'text-primary font-medium' : 'text-primary/40 hover:text-primary'}`}
+              className={`pb-3 lg:pb-4 text-[10px] lg:text-xs tracking-widest uppercase transition-colors relative ${activeTab === tab ? 'text-primary font-medium' : 'text-primary/40 hover:text-primary'}`}
             >
               {tab}
               {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent" />}
@@ -241,158 +224,39 @@ const SiteEditor = () => {
           ))}
         </div>
 
-        <div className="flex-1 overflow-auto pr-4 pb-12">
-          
-          {activeTab === 'BRAND' && (
-            <div className="space-y-6">
-              <TextInputWithCount 
-                label="Brand Name" 
-                value={brandForm.name} 
-                onChange={(v) => handleBrandChange('name', v)} 
-                maxLength={30} 
-              />
-              <ImageCropper 
-                label="Logo Image (Proporción libre)"
-                aspectRatio={null} 
-                currentImageUrl={brandForm.logoUrl}
-                onUploadSuccess={(url) => handleBrandChange('logoUrl', url)}
-              />
-              <div>
-                <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Display Mode</label>
-                <select 
-                  value={brandForm.displayMode} 
-                  onChange={(e) => handleBrandChange('displayMode', e.target.value)}
-                  className="w-full bg-white border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent"
-                >
-                  <option value="TEXT">Text Only</option>
-                  <option value="LOGO">Logo Only</option>
-                  <option value="BOTH">Text and Logo</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'TEXTS' && (
-            <div className="space-y-6">
-              <TextInputWithCount label='"New Arrivals" Text' value={uiTextsForm.newArrivals} onChange={v => handleUiTextsChange('newArrivals', v)} maxLength={40} />
-              <TextInputWithCount label='"View Catalog" Text' value={uiTextsForm.viewCatalog} onChange={v => handleUiTextsChange('viewCatalog', v)} maxLength={40} />
-              <TextInputWithCount label='Search Placeholder' value={uiTextsForm.searchPlaceholder} onChange={v => handleUiTextsChange('searchPlaceholder', v)} maxLength={50} />
-            </div>
-          )}
-
-          {activeTab === 'HERO' && (
-            <div className="space-y-6">
-              <ImageCropper 
-                label="Background Image (Hero 16:9)"
-                aspectRatio={16/9} 
-                currentImageUrl={heroForm.backgroundImage}
-                onUploadSuccess={(url) => handleHeroChange('backgroundImage', url)}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <TextInputWithCount label='Headline' value={heroForm.headline} onChange={v => handleHeroChange('headline', v)} maxLength={50} />
-                <TextInputWithCount label='Highlighted Word' value={heroForm.highlightedWord} onChange={v => handleHeroChange('highlightedWord', v)} maxLength={30} />
-              </div>
-              <TextAreaWithCount label='Subtitle' rows="3" value={heroForm.subtitle} onChange={v => handleHeroChange('subtitle', v)} maxLength={150} />
-              <div className="grid grid-cols-2 gap-4">
-                <TextInputWithCount label='CTA Button Label' value={heroForm.ctaLabel} onChange={v => handleHeroChange('ctaLabel', v)} maxLength={30} />
-                <TextInputWithCount label='Footer Tagline' value={heroForm.footerTagline} onChange={v => handleHeroChange('footerTagline', v)} maxLength={80} />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'FOOTER' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <TextInputWithCount label='Brand Title' value={footerForm.title} onChange={v => handleFooterChange('title', v)} maxLength={50} />
-                <TextInputWithCount label='Brand Subtitle' value={footerForm.subtitle} onChange={v => handleFooterChange('subtitle', v)} maxLength={100} />
-              </div>
-              <TextInputWithCount label='Newsletter Title' value={footerForm.newsletterTitle} onChange={v => handleFooterChange('newsletterTitle', v)} maxLength={50} />
-              <TextAreaWithCount label='Newsletter Subtitle' rows="3" value={footerForm.newsletterSubtitle} onChange={v => handleFooterChange('newsletterSubtitle', v)} maxLength={150} />
-            </div>
-          )}
-
-          {activeTab === 'WHATSAPP' && (
-            <div className="space-y-6">
-              <TextInputWithCount 
-                label="WhatsApp Number" 
-                value={waForm} 
-                onChange={(v) => { setWaForm(v); setIsSaved(false); }} 
-                maxLength={20} 
-              />
-              <p className="text-xs text-primary/50 mt-2">Include your country code, without the + sign. Example: 1234567890</p>
-            </div>
-          )}
-
+        <div className="flex-1 overflow-auto lg:pr-4 pb-12">
+          {activeTab === 'BRAND' && <BrandEditor form={brandForm} onChange={handleBrandChange} />}
+          {activeTab === 'TEXTS' && <TextsEditor form={uiTextsForm} onChange={handleUiTextsChange} />}
+          {activeTab === 'HERO' && <HeroEditor form={heroForm} onChange={handleHeroChange} products={products} />}
+          {activeTab === 'FOOTER' && <FooterEditor form={footerForm} onChange={handleFooterChange} />}
+          {activeTab === 'WHATSAPP' && <WhatsappEditor form={waForm} onChange={handleWaChange} />}
           {activeTab === 'COLLECTIONS' && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center mb-6">
-                 <span className="text-sm font-medium">{collections.length} Collections</span>
-                 <button onClick={handleAddCollection} className="flex items-center space-x-2 text-xs tracking-widest bg-primary text-white px-4 py-2 hover:bg-black">
-                   <Plus size={14} /> <span>ADD COLLECTION</span>
-                 </button>
-              </div>
-              {collections.map(c => (
-                <div key={c.id} className="bg-white border border-black/5 overflow-hidden">
-                  <div 
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-[#f9f9f9]"
-                    onClick={() => setExpandedCollection(expandedCollection === c.id ? null : c.id)}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gray-100 overflow-hidden">
-                        <img src={c.coverImage} alt={c.name} className="w-full h-full object-cover" />
-                      </div>
-                      <span className="font-medium text-sm">{c.name}</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <button onClick={(e) => { e.stopPropagation(); deleteCatalogItem('collections', c.id); }} className="text-primary/40 hover:text-red-500 p-2">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  {expandedCollection === c.id && (
-                    <div className="p-4 border-t border-black/5 bg-[#fbfbfb] space-y-4">
-                      <TextInputWithCount 
-                        label="Name" 
-                        value={c.name} 
-                        onChange={v => updateCatalogItem('collections', c, { ...c, name: v })} 
-                        maxLength={40} 
-                      />
-                      <ImageCropper 
-                        label="Cover Image (Proporción 3:4)"
-                        aspectRatio={3/4} 
-                        currentImageUrl={c.coverImage}
-                        onUploadSuccess={(url) => updateCatalogItem('collections', c, { ...c, coverImage: url })}
-                      />
-                      <TextAreaWithCount 
-                        label="Description" 
-                        rows="3" 
-                        value={c.description} 
-                        onChange={v => updateCatalogItem('collections', c, { ...c, description: v })} 
-                        maxLength={150} 
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <CollectionsEditor 
+              collections={collections}
+              addCollection={handleAddCollection}
+              deleteCollection={deleteCatalogItem}
+              updateCollection={updateCatalogItem}
+              expandedCollection={expandedCollection}
+              setExpandedCollection={setExpandedCollection}
+            />
           )}
         </div>
       </div>
 
       {/* Live Preview Panel */}
-      <div className="w-full xl:w-96 flex flex-col shrink-0 sticky top-12 h-full min-h-[500px]">
+      <div className="w-full xl:w-96 flex flex-col shrink-0 sticky top-12 h-[500px] xl:h-full mt-8 xl:mt-0">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs tracking-widest text-primary/60 uppercase flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-2"></span> LIVE PREVIEW</span>
+          <span className="text-[10px] lg:text-xs tracking-widest text-primary/60 uppercase flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-2"></span> LIVE PREVIEW</span>
           {!isSaved && activeTab !== 'COLLECTIONS' && <span className="text-[10px] tracking-widest text-accent uppercase">● Unsaved</span>}
         </div>
         
         {/* Browser Frame */}
         <div className="bg-white border border-black/10 rounded-t-lg shadow-sm flex flex-col flex-1 overflow-hidden">
-          <div className="h-8 bg-[#f5f5f5] border-b border-black/5 flex items-center px-4 space-x-1.5 shrink-0">
-            <div className="w-2.5 h-2.5 rounded-full bg-black/20"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-black/20"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-black/20"></div>
-            <div className="flex-1 mx-4 h-4 bg-white border border-black/5 rounded-full"></div>
+          <div className="h-6 lg:h-8 bg-[#f5f5f5] border-b border-black/5 flex items-center px-4 space-x-1.5 shrink-0">
+            <div className="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-black/20"></div>
+            <div className="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-black/20"></div>
+            <div className="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-black/20"></div>
+            <div className="flex-1 mx-4 h-3 lg:h-4 bg-white border border-black/5 rounded-full"></div>
           </div>
           
           <div className="flex-1 bg-background overflow-hidden relative">
@@ -403,7 +267,7 @@ const SiteEditor = () => {
         {activeTab !== 'COLLECTIONS' && (
           <button 
             onClick={handleSaveAll}
-            className={`mt-4 w-full py-4 text-xs tracking-widest uppercase transition-colors flex justify-center items-center ${isSaved ? 'bg-[#e5f5e0] text-[#0b4f37]' : 'bg-[#fbf5e6] text-accent hover:bg-accent hover:text-white'}`}
+            className={`mt-4 w-full py-3 lg:py-4 text-[10px] lg:text-xs tracking-widest uppercase transition-colors flex justify-center items-center ${isSaved ? 'bg-[#e5f5e0] text-[#0b4f37]' : 'bg-[#fbf5e6] text-accent hover:bg-accent hover:text-white'}`}
           >
             {isSaved ? 'SAVED' : 'SAVE CHANGES'}
           </button>

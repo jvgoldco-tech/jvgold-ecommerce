@@ -5,7 +5,7 @@ const WhatsAppButton = () => {
   const whatsappNumber = useStore(state => state.siteConfig.whatsappNumber);
 
   const handleClick = () => {
-    const text = encodeURIComponent("Hola Jewelry Prime, me gustaría hacer una consulta general.");
+    const text = encodeURIComponent("Hola JV GOLD & CO LLC, me gustaría hacer una consulta general.");
     window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
   };
 
