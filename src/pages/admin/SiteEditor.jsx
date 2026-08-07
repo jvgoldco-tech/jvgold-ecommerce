@@ -77,8 +77,6 @@ const SiteEditor = () => {
   const handleWaChange = (field, value) => {
     setWaForm(prev => ({ ...prev, [field]: value }));
     setIsSaved(false);
-  const syncStateToCloud = useStore(state => state.syncStateToCloud);
-
   const handleSaveAll = async () => {
     if (activeTab === 'BRAND') updateBrandConfig(brandForm);
     if (activeTab === 'TEXTS') updateUiTexts(uiTextsForm);
@@ -91,10 +89,9 @@ const SiteEditor = () => {
         defaultWhatsappMessage: waForm.message
       });
     }
-    // Sincronizar inmediatamente todos los cambios con Supabase para que cualquier cliente los vea
-    setTimeout(() => {
-      syncStateToCloud();
-    }, 100);
+    
+    // Guardar inmediatamente en Supabase
+    await syncStateToCloud();
     setIsSaved(true);
   };
 
@@ -257,22 +254,20 @@ const SiteEditor = () => {
           )}
         </div>
 
-        {/* Save button - mobile only (desktop has it in the preview panel) */}
-        {activeTab !== 'COLLECTIONS' && (
-          <button 
-            onClick={handleSaveAll}
-            className={`lg:hidden mt-6 w-full py-4 text-xs tracking-widest uppercase transition-colors flex justify-center items-center ${isSaved ? 'bg-[#e5f5e0] text-[#0b4f37]' : 'bg-[#fbf5e6] text-accent hover:bg-accent hover:text-white'}`}
-          >
-            {isSaved ? 'SAVED ✓' : 'SAVE CHANGES'}
-          </button>
-        )}
+        {/* Save button - mobile only */}
+        <button 
+          onClick={handleSaveAll}
+          className={`lg:hidden mt-6 w-full py-4 text-xs tracking-widest uppercase transition-colors flex justify-center items-center font-bold shadow-md ${isSaved ? 'bg-[#0b4f37] text-white' : 'bg-accent text-white hover:bg-black'}`}
+        >
+          {isSaved ? 'PUBLICADO EN LA NUBE ✓' : 'GUARDAR Y PUBLICAR EN LA NUBE ☁️'}
+        </button>
       </div>
 
       {/* Live Preview Panel - hidden on mobile */}
       <div className="hidden lg:flex w-full lg:w-96 flex-col shrink-0 sticky top-12 h-[500px] lg:h-[calc(100vh-160px)] mt-8 lg:mt-0">
         <div className="flex items-center justify-between mb-4">
           <span className="text-[10px] lg:text-xs tracking-widest text-primary/60 uppercase flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-2"></span> LIVE PREVIEW</span>
-          {!isSaved && activeTab !== 'COLLECTIONS' && <span className="text-[10px] tracking-widest text-accent uppercase">● Unsaved</span>}
+          {!isSaved && <span className="text-[10px] tracking-widest text-accent uppercase font-bold">● Cambios sin guardar</span>}
         </div>
         
         {/* Browser Frame */}
@@ -289,14 +284,12 @@ const SiteEditor = () => {
           </div>
         </div>
 
-        {activeTab !== 'COLLECTIONS' && (
-          <button 
-            onClick={handleSaveAll}
-            className={`mt-4 w-full py-3 lg:py-4 text-[10px] lg:text-xs tracking-widest uppercase transition-colors flex justify-center items-center ${isSaved ? 'bg-[#e5f5e0] text-[#0b4f37]' : 'bg-[#fbf5e6] text-accent hover:bg-accent hover:text-white'}`}
-          >
-            {isSaved ? 'SAVED' : 'SAVE CHANGES'}
-          </button>
-        )}
+        <button 
+          onClick={handleSaveAll}
+          className={`mt-4 w-full py-3 lg:py-4 text-[10px] lg:text-xs tracking-widest uppercase transition-all duration-300 flex justify-center items-center font-bold shadow-md ${isSaved ? 'bg-[#0b4f37] text-white' : 'bg-accent text-white hover:bg-black'}`}
+        >
+          {isSaved ? 'PUBLICADO EN LA NUBE ✓' : 'GUARDAR Y PUBLICAR EN LA NUBE ☁️'}
+        </button>
       </div>
     </div>
   );
