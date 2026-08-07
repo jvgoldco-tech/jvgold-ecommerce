@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
     "seed:admin": "node seed-admin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,8 +29,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "5.22.0",
     "nodemon": "^3.1.14",
-    "prisma": "^5.22.0"
+    "prisma": "5.22.0"
   }
 }
