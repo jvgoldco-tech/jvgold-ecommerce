@@ -13,8 +13,21 @@ const PORT = process.env.PORT || 4000;
 app.use(helmet({
   crossOriginResourcePolicy: false
 }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, '') : null,
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin) || origin.includes('localhost')) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
