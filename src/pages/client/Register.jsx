@@ -23,8 +23,8 @@ const Register = () => {
     setError('');
     setSuccess('');
     
-    if (password.length < 12) {
-      setError('Password must be at least 12 characters.');
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
     if (password !== confirmPassword) {
@@ -110,7 +110,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Password (Min. 12 chars)</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Password <span className="text-primary/30">(Mín. 8 caracteres)</span></label>
               <div className="relative">
                 <input 
                   type={showPassword ? 'text' : 'password'} 

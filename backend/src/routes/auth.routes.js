@@ -11,7 +11,7 @@ const registerSchema = z.object({
   body: z.object({
     name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
     email: z.string().email("Formato de correo inválido"),
-    password: z.string().min(12, "La contraseña debe tener al menos 12 caracteres (recomendación NIST)")
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres")
   })
 });
 
@@ -31,7 +31,7 @@ const forgotPasswordSchema = z.object({
 const resetPasswordSchema = z.object({
   body: z.object({
     token: z.string().min(1, "Token requerido"),
-    newPassword: z.string().min(12, "La contraseña debe tener al menos 12 caracteres (recomendación NIST)")
+    newPassword: z.string().min(8, "La contraseña debe tener al menos 8 caracteres")
   })
 });
 
