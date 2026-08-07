@@ -56,6 +56,7 @@ export const useStore = create(
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
+          localStorage.removeItem('token');
           set({ user: null, isAuthenticated: false, favorites: [] });
         }
       },

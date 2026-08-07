@@ -10,14 +10,28 @@ const api = axios.create({
   }
 });
 
+// Interceptor para inyectar token de autorización si está en localStorage
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Interceptores para manejar errores globales
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Si la respuesta incluye un token, guardarlo automáticamente
+    if (response.data && response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response;
+  },
   (error) => {
-    // Si recibimos 401 Unauthorized y no estamos en la página de login
     if (error.response && error.response.status === 401) {
-      // Podríamos limpiar el store o forzar redirección
-      // window.location.href = '/login';
+      // Token expirado o inválido
+      // localStorage.removeItem('token');
     }
     return Promise.reject(error);
   }

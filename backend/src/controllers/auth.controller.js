@@ -135,9 +135,9 @@ const login = async (req, res) => {
       data: { failedLoginAttempts: 0, lockedUntil: null }
     });
 
-    // Generar JWT (Access Token corto)
+    // Generar JWT (Access Token)
     const payload = { userId: user.id, role: user.role, tokenVersion: user.tokenVersion };
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     // Generar Refresh Token largo en BD
     const refreshToken = crypto.randomBytes(40).toString('hex');
@@ -149,26 +149,27 @@ const login = async (req, res) => {
         refreshTokenHash: refreshHash,
         userAgent: req.headers['user-agent'] || '',
         ipAddress: req.ip || '',
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 días
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 días
       }
     });
 
-    // Enviar cookies HttpOnly
+    // Enviar cookies HttpOnly compatibles con cross-domain (Vercel <-> Render)
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 min
+      secure: true, // Requerido para sameSite: 'none' en HTTPS
+      sameSite: 'none',
+      maxAge: 24 * 60 * 60 * 1000 // 24 horas
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+      secure: true,
+      sameSite: 'none',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 días
     });
 
     res.status(200).json({ 
+      token: accessToken,
       user: { 
         id: user.id, 
         name: user.name, 

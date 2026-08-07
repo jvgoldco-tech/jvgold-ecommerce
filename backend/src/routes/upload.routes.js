@@ -39,8 +39,10 @@ router.post('/', requireAuth, requireAdmin, (req, res) => {
         .webp({ quality: 80 })
         .toFile(outputPath);
 
-      // Devolver la URL relativa de la imagen (el proxy de Vite la sirve en dev, y en producción el servidor la maneja)
-      const fileUrl = `/uploads/${filename}`;
+      // Devolver la URL completa de la imagen para que funcione directamente en Vercel
+      const host = req.get('host');
+      const protocol = req.protocol === 'http' && host.includes('onrender.com') ? 'https' : req.protocol;
+      const fileUrl = `${protocol}://${host}/uploads/${filename}`;
       
       res.status(200).json({ 
         message: 'Imagen subida y optimizada exitosamente.',
