@@ -25,7 +25,7 @@ const Login = () => {
       const response = await api.post('/auth/login', { email, password });
       login(response.data.user);
       
-      if (response.data.user.role === 'admin') {
+      if (response.data.user.role === 'ADMIN') {
         navigate('/admin');
       } else {
         navigate('/'); // Redirigir al cliente al catálogo

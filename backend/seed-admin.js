@@ -34,6 +34,8 @@ async function seedAdmin() {
       passwordHash,
       role: 'ADMIN',
       isVerified: true,
+      failedLoginAttempts: 0,
+      lockedUntil: null
     },
     create: {
       name: 'Administrator',
@@ -41,7 +43,9 @@ async function seedAdmin() {
       passwordHash,
       role: 'ADMIN',
       isVerified: true,
-    },
+      failedLoginAttempts: 0,
+      lockedUntil: null
+    }
   });
 
   console.log(`✅ Admin user ready: ${admin.email} (role: ${admin.role})`);

@@ -13,7 +13,7 @@ const FabNav = () => {
   const collections = useStore(state => state.catalogs.collections);
   const isAuthenticated = useStore(state => state.isAuthenticated);
   const user = useStore(state => state.user);
-  const isAdmin = isAuthenticated && user?.role === 'admin';
+  const isAdmin = isAuthenticated && user?.role === 'ADMIN';
   
   // Metallic gold gradient used for borders and rings
   const goldGradient = "bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728]";

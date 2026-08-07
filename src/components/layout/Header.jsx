@@ -124,7 +124,7 @@ const Header = () => {
           </button>
           
           {/* Admin Panel Return Button - only visible for admin users */}
-          {isAuthenticated && user?.role === 'admin' && (
+          {isAuthenticated && user?.role === 'ADMIN' && (
             <button
               onClick={() => navigate('/admin')}
               className="hidden md:flex items-center space-x-2 text-[10px] tracking-[0.2em] uppercase bg-primary text-white px-4 py-2 hover:bg-accent transition-colors"
@@ -135,7 +135,7 @@ const Header = () => {
           )}
 
           {/* Login/Profile for non-admin users */}
-          {(!isAuthenticated || (isAuthenticated && user?.role !== 'admin')) && (
+          {(!isAuthenticated || (isAuthenticated && user?.role !== 'ADMIN')) && (
             isAuthenticated ? (
               <Link to="/profile" className="hidden md:flex items-center space-x-2 text-[10px] tracking-[0.2em] uppercase text-primary/60 hover:text-primary transition-colors">
                 <User size={14} />
