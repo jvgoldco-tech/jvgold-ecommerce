@@ -19,8 +19,7 @@ const MainLayout = () => {
     const lenis = new Lenis({
       autoRaf: true,
       lerp: 0.08,
-      smoothWheel: true,
-      syncToNative: true,
+      smoothWheel: true
     });
 
     return () => {

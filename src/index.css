@@ -15,7 +15,11 @@
 
 @layer base {
   html, body {
-    @apply bg-background text-primary font-sans antialiased overflow-x-hidden w-full;
+    @apply bg-background text-primary font-sans antialiased;
+  }
+  
+  #root {
+    @apply overflow-x-hidden w-full min-h-screen flex flex-col relative;
   }
 
   h1,
