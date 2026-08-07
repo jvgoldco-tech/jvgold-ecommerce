@@ -101,7 +101,20 @@ export const useStore = create(
       fetchBusinessSettings: async () => {
         try {
           const response = await api.get('/settings');
-          set({ businessSettings: response.data });
+          const data = response.data;
+          if (!data) return;
+
+          const updates = { businessSettings: data };
+          if (data.siteConfigJson) {
+            try { updates.siteConfig = JSON.parse(data.siteConfigJson); } catch (e) {}
+          }
+          if (data.productsJson) {
+            try { updates.products = JSON.parse(data.productsJson); } catch (e) {}
+          }
+          if (data.catalogsJson) {
+            try { updates.catalogs = JSON.parse(data.catalogsJson); } catch (e) {}
+          }
+          set(updates);
         } catch (error) {
           console.error('Error fetching settings:', error);
         }
@@ -115,86 +128,119 @@ export const useStore = create(
           throw error;
         }
       },
+      syncStateToCloud: async () => {
+        try {
+          const state = get();
+          await api.put('/settings', {
+            ...state.businessSettings,
+            siteConfigJson: JSON.stringify(state.siteConfig),
+            productsJson: JSON.stringify(state.products),
+            catalogsJson: JSON.stringify(state.catalogs),
+          });
+        } catch (error) {
+          console.error('Error syncing to cloud:', error);
+        }
+      },
 
       // Catalog Actions
-      addCatalogItem: (catalogName, item) => set(state => ({
-        catalogs: {
-          ...state.catalogs,
-          [catalogName]: [...state.catalogs[catalogName], item]
-        }
-      })),
-      updateCatalogItem: (catalogName, oldItem, newItem) => set(state => {
-        // If it's an array of objects (like collections) or array of strings
-        const list = state.catalogs[catalogName];
-        if (catalogName === 'collections') {
+      addCatalogItem: (catalogName, item) => {
+        set(state => ({
+          catalogs: {
+            ...state.catalogs,
+            [catalogName]: [...state.catalogs[catalogName], item]
+          }
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      updateCatalogItem: (catalogName, oldItem, newItem) => {
+        set(state => {
+          const list = state.catalogs[catalogName];
+          if (catalogName === 'collections') {
+            return {
+              catalogs: {
+                ...state.catalogs,
+                collections: list.map(c => c.id === oldItem.id ? { ...c, ...newItem } : c)
+              }
+            };
+          }
           return {
             catalogs: {
               ...state.catalogs,
-              collections: list.map(c => c.id === oldItem.id ? { ...c, ...newItem } : c)
+              [catalogName]: list.map(i => i === oldItem ? newItem : i)
             }
           };
-        }
-        return {
+        });
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      deleteCatalogItem: (catalogName, itemOrId) => {
+        set(state => {
+          const list = state.catalogs[catalogName];
+          if (catalogName === 'collections') {
+            return {
+              catalogs: { ...state.catalogs, collections: list.filter(c => c.id !== itemOrId) }
+            };
+          }
+          return {
+            catalogs: { ...state.catalogs, [catalogName]: list.filter(i => i !== itemOrId) }
+          };
+        });
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      reorderCatalogItems: (catalogName, newOrder) => {
+        set(state => ({
           catalogs: {
             ...state.catalogs,
-            [catalogName]: list.map(i => i === oldItem ? newItem : i)
+            [catalogName]: newOrder
           }
-        };
-      }),
-      deleteCatalogItem: (catalogName, itemOrId) => set(state => {
-        const list = state.catalogs[catalogName];
-        if (catalogName === 'collections') {
-          return {
-            catalogs: { ...state.catalogs, collections: list.filter(c => c.id !== itemOrId) }
-          };
-        }
-        return {
-          catalogs: { ...state.catalogs, [catalogName]: list.filter(i => i !== itemOrId) }
-        };
-      }),
-      reorderCatalogItems: (catalogName, newOrder) => set(state => ({
-        catalogs: {
-          ...state.catalogs,
-          [catalogName]: newOrder
-        }
-      })),
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
 
       // Inventory Actions
-      addProduct: (product) => set(state => {
-        const now = new Date().toISOString();
-        const sku = generateSku(product.category, state.products);
-        const status = calculateStatus(Number(product.stockCurrent), Number(product.stockMinimum));
-        
-        const newProduct = {
-          ...product,
-          id: Math.random().toString(36).substr(2, 9),
-          sku,
-          status,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: 'Administrador',
-          lastMovement: 'Alta Inicial'
-        };
-        return { products: [...state.products, newProduct] };
-      }),
+      addProduct: (product) => {
+        set(state => {
+          const now = new Date().toISOString();
+          const sku = generateSku(product.category, state.products);
+          const status = calculateStatus(Number(product.stockCurrent), Number(product.stockMinimum));
+          
+          const newProduct = {
+            ...product,
+            id: Math.random().toString(36).substr(2, 9),
+            sku,
+            status,
+            createdAt: now,
+            updatedAt: now,
+            createdBy: 'Administrador',
+            lastMovement: 'Alta Inicial'
+          };
+          return { products: [...state.products, newProduct] };
+        });
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
       
-      updateProduct: (id, updatedData) => set(state => {
-        return {
-          products: state.products.map(p => {
-            if (p.id === id) {
-              const merged = { ...p, ...updatedData };
-              merged.status = calculateStatus(Number(merged.stockCurrent), Number(merged.stockMinimum));
-              merged.updatedAt = new Date().toISOString();
-              return merged;
-            }
-            return p;
-          })
-        };
-      }),
+      updateProduct: (id, updatedData) => {
+        set(state => {
+          return {
+            products: state.products.map(p => {
+              if (p.id === id) {
+                const merged = { ...p, ...updatedData };
+                merged.status = calculateStatus(Number(merged.stockCurrent), Number(merged.stockMinimum));
+                merged.updatedAt = new Date().toISOString();
+                return merged;
+              }
+              return p;
+            })
+          };
+        });
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
       
-      deleteProduct: (id) => set(state => ({
-        products: state.products.filter(p => p.id !== id)
-      })),
+      deleteProduct: (id) => {
+        set(state => ({
+          products: state.products.filter(p => p.id !== id)
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
 
       // Shopping List & Favorites
       addToShoppingList: (product) => set(state => {
@@ -259,21 +305,36 @@ export const useStore = create(
       },
 
       // Site Config
-      updateBrandConfig: (config) => set(state => ({
-        siteConfig: { ...state.siteConfig, brand: { ...state.siteConfig.brand, ...config } }
-      })),
-      updateUiTexts: (config) => set(state => ({
-        siteConfig: { ...state.siteConfig, uiTexts: { ...state.siteConfig.uiTexts, ...config } }
-      })),
-      updateHeroConfig: (config) => set(state => ({
-        siteConfig: { ...state.siteConfig, hero: { ...state.siteConfig.hero, ...config } }
-      })),
-      updateFooterConfig: (config) => set(state => ({
-        siteConfig: { ...state.siteConfig, footer: { ...state.siteConfig.footer, ...config } }
-      })),
-      updateWhatsappNumber: (num) => set(state => ({
-        siteConfig: { ...state.siteConfig, whatsappNumber: num }
-      }))
+      updateBrandConfig: (config) => {
+        set(state => ({
+          siteConfig: { ...state.siteConfig, brand: { ...state.siteConfig.brand, ...config } }
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      updateUiTexts: (config) => {
+        set(state => ({
+          siteConfig: { ...state.siteConfig, uiTexts: { ...state.siteConfig.uiTexts, ...config } }
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      updateHeroConfig: (config) => {
+        set(state => ({
+          siteConfig: { ...state.siteConfig, hero: { ...state.siteConfig.hero, ...config } }
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      updateFooterConfig: (config) => {
+        set(state => ({
+          siteConfig: { ...state.siteConfig, footer: { ...state.siteConfig.footer, ...config } }
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      },
+      updateWhatsappNumber: (num) => {
+        set(state => ({
+          siteConfig: { ...state.siteConfig, whatsappNumber: num }
+        }));
+        setTimeout(() => get().syncStateToCloud(), 100);
+      }
     }),
     {
       name: 'jv-gold-co-store-v7', // bumped version to clear old mock state

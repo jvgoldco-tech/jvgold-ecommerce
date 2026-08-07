@@ -24,10 +24,12 @@ import { useStore } from './store/useStore'
 
 function App() {
   const checkAuth = useStore(state => state.checkAuth);
+  const fetchBusinessSettings = useStore(state => state.fetchBusinessSettings);
   
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    fetchBusinessSettings();
+  }, [checkAuth, fetchBusinessSettings]);
 
   return (
     <HelmetProvider>

@@ -59,6 +59,9 @@ model BusinessSettings {
   facebookUrl            String?
   instagramUrl           String?
   tiktokUrl              String?
+  siteConfigJson         String?  @db.Text
+  productsJson           String?  @db.Text
+  catalogsJson           String?  @db.Text
   updatedAt              DateTime @updatedAt
 }
 

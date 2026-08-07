@@ -77,20 +77,24 @@ const SiteEditor = () => {
   const handleWaChange = (field, value) => {
     setWaForm(prev => ({ ...prev, [field]: value }));
     setIsSaved(false);
-  };
+  const syncStateToCloud = useStore(state => state.syncStateToCloud);
 
-  const handleSaveAll = () => {
+  const handleSaveAll = async () => {
     if (activeTab === 'BRAND') updateBrandConfig(brandForm);
     if (activeTab === 'TEXTS') updateUiTexts(uiTextsForm);
     if (activeTab === 'HERO') updateHeroConfig(heroForm);
     if (activeTab === 'FOOTER') updateFooterConfig(footerForm);
     if (activeTab === 'WHATSAPP') {
-      updateBusinessSettings({
+      await updateBusinessSettings({
         ...businessSettings,
         whatsappNumber: waForm.number,
         defaultWhatsappMessage: waForm.message
       });
     }
+    // Sincronizar inmediatamente todos los cambios con Supabase para que cualquier cliente los vea
+    setTimeout(() => {
+      syncStateToCloud();
+    }, 100);
     setIsSaved(true);
   };
 

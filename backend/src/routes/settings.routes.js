@@ -60,6 +60,9 @@ router.put('/', requireAuth, requireAdmin, async (req, res) => {
         facebookUrl: data.facebookUrl,
         instagramUrl: data.instagramUrl,
         tiktokUrl: data.tiktokUrl,
+        siteConfigJson: data.siteConfigJson !== undefined ? data.siteConfigJson : undefined,
+        productsJson: data.productsJson !== undefined ? data.productsJson : undefined,
+        catalogsJson: data.catalogsJson !== undefined ? data.catalogsJson : undefined,
       }
     });
 
