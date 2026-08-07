@@ -54,7 +54,7 @@ const newsletterRoutes = require('./routes/newsletter.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/settings', settingsRoutes);
