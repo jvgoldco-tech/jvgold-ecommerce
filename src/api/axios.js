@@ -2,8 +2,11 @@ import axios from 'axios';
 
 // En desarrollo, Vite hace proxy de /api → localhost:4000/api
 // En producción, VITE_API_URL debe apuntar al dominio del backend
+const rawApiUrl = import.meta.env.VITE_API_URL || '/api';
+const baseURL = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL,
   withCredentials: true, // Importante para enviar Cookies HttpOnly
   headers: {
     'Content-Type': 'application/json'
