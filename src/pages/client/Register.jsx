@@ -41,7 +41,11 @@ const Register = () => {
       setTimeout(() => navigate('/login'), 4000);
     } catch (err) {
       if (err.response && err.response.data) {
-        setError(err.response.data.message || 'Error registering user.');
+        if (err.response.data.errors && err.response.data.errors.length > 0) {
+          setError(err.response.data.errors[0].message);
+        } else {
+          setError(err.response.data.message || 'Error registering user.');
+        }
       } else {
         setError('Server connection error.');
       }

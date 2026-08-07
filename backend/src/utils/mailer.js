@@ -5,41 +5,37 @@ let transporter = null;
 const initMailer = async () => {
   if (transporter) return;
   
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    // Phase 1 / Phase 2: Real SMTP provider (Resend, Google Workspace, etc)
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || 587,
-      secure: process.env.SMTP_SECURE === 'true', // true for 465
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-    console.log('✅ Nodemailer (SMTP de Producción) inicializado.');
-  } else {
-    // Ethereal genera una cuenta de prueba temporal de forma gratuita para dev
-    const testAccount = await nodemailer.createTestAccount();
-    
-    transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: testAccount.user, 
-        pass: testAccount.pass, 
-      },
-    });
-    console.log('✅ Nodemailer (Ethereal) inicializado listo para pruebas.');
+  try {
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+      console.log('✅ Nodemailer (SMTP de Producción) inicializado.');
+    } else {
+      console.log('⚠️ No se detectaron credenciales SMTP en el servidor. Modo simulación activo.');
+    }
+  } catch (err) {
+    console.error('Error inicializando transportador de correo:', err);
   }
 };
 
 const sendConfirmationEmail = async (email, token, userName, businessSettings) => {
-  if (!transporter) await initMailer();
+  try {
+    if (!transporter) await initMailer();
 
-  const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/verify?token=${token}`;
-  
-  const businessName = businessSettings?.businessName || 'JV GOLD & CO LLC';
+    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/verify?token=${token}`;
+    const businessName = businessSettings?.businessName || 'JV GOLD & CO LLC';
+
+    if (!transporter) {
+      console.log(`[SIMULACIÓN EMAIL] Enlace de confirmación para ${email}: ${verifyUrl}`);
+      return true;
+    }
   
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-w: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px;">
