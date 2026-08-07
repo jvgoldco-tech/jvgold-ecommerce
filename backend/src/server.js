@@ -36,10 +36,14 @@ app.use(cookieParser());
 // Servir la carpeta de imágenes subidas de forma estática
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+app.set('trust proxy', 1);
+
 // Rate Limiting para Autenticación
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // Limite estricto de seguridad para producción
+  max: 60, // Límite amplio para evitar bloqueos innecesarios en producción/pruebas
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { message: 'Demasiados intentos. Por favor, inténtelo de nuevo más tarde.' }
 });
 

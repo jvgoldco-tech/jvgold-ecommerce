@@ -26,24 +26,32 @@ const register = async (req, res) => {
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
     const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-    // Guardar usuario inactivo
+    // Si no hay SMTP configurado en el servidor (Fase 1 provisional), auto-activamos la cuenta
+    const autoVerify = !process.env.SMTP_HOST;
+
+    // Guardar usuario
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
         passwordHash,
-        verificationTokenHash: tokenHash,
-        verificationTokenExpires: tokenExpires,
+        isVerified: autoVerify,
+        verificationTokenHash: autoVerify ? null : tokenHash,
+        verificationTokenExpires: autoVerify ? null : tokenExpires,
       }
     });
 
     // Fetch Business Settings for the email branding
     const businessSettings = await prisma.businessSettings.findUnique({ where: { id: 'singleton' } });
 
-    // Enviar email de confirmación
+    // Enviar email de confirmación (si hay SMTP o simulación)
     await sendConfirmationEmail(email, rawToken, name, businessSettings);
 
-    res.status(200).json({ message: 'Si el correo es válido, recibirás un enlace de confirmación.' });
+    const message = autoVerify
+      ? '¡Registro exitoso! Ya puedes iniciar sesión con tu cuenta.'
+      : 'Si el correo es válido, recibirás un enlace de confirmación.';
+
+    res.status(200).json({ message });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error interno del servidor' });
