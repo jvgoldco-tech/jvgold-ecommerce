@@ -77,6 +77,8 @@ const SiteEditor = () => {
   const handleWaChange = (field, value) => {
     setWaForm(prev => ({ ...prev, [field]: value }));
     setIsSaved(false);
+  };
+
   const handleSaveAll = async () => {
     if (activeTab === 'BRAND') updateBrandConfig(brandForm);
     if (activeTab === 'TEXTS') updateUiTexts(uiTextsForm);
