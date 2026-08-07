@@ -48,14 +48,14 @@ const Hero = () => {
       <img 
         src={heroConfig.backgroundImage}
         alt="Hero Background"
-        fetchpriority="high"
+        fetchPriority="high"
         className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity"
       />
       
       {/* Left Panel: Brand */}
       <div className="relative z-10 w-full md:w-1/2 h-full flex flex-col justify-center px-8 md:px-16 lg:px-24 border-r border-white/10">
         <span className="text-accent text-xs tracking-widest font-medium mb-8">FINE JEWELRY</span>
-        <h1 className="text-5xl md:text-7xl font-display text-white leading-tight mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-display text-white leading-tight mb-6">
           {heroConfig.headline} <span className="text-accent italic font-serif">{heroConfig.highlightedWord}</span>
         </h1>
         <p className="text-white/80 font-serif italic text-xl md:text-2xl max-w-md mb-12">
@@ -83,7 +83,7 @@ const Hero = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              <button onClick={prevSlide} className="text-white/40 hover:text-white transition-colors">
+              <button onClick={prevSlide} aria-label="Previous slide" className="text-white/40 hover:text-white transition-colors p-2">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="1" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               </button>
               <div className="flex-1 flex space-x-2">
@@ -98,7 +98,7 @@ const Hero = () => {
                   </div>
                 ))}
               </div>
-              <button onClick={nextSlide} className="text-white/40 hover:text-white transition-colors">
+              <button onClick={nextSlide} aria-label="Next slide" className="text-white/40 hover:text-white transition-colors p-2">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="1" fill="none"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
@@ -124,11 +124,11 @@ const Hero = () => {
                </div>
                
                <div className="p-6 pb-8 flex flex-col w-full text-left">
-                 <span className="text-accent text-[8px] tracking-[0.2em] mb-2 uppercase block">
+                 <span className="text-accent text-[10px] md:text-[8px] tracking-[0.2em] mb-2 uppercase block">
                    {heroProducts[currentIndex].category} · 18K WHITE GOLD
                  </span>
-                 <h3 className="text-white font-display text-3xl mb-2">{heroProducts[currentIndex].name}</h3>
-                 <span className="text-white/40 text-[9px] tracking-widest mb-6 block uppercase">REF. {heroProducts[currentIndex].sku}</span>
+                 <h3 className="text-white font-display text-2xl md:text-3xl mb-2">{heroProducts[currentIndex].name}</h3>
+                 <span className="text-white/40 text-[10px] md:text-[9px] tracking-widest mb-6 block uppercase">REF. {heroProducts[currentIndex].sku}</span>
                  
                  <div className="flex justify-between items-end w-full">
                    <div className="flex justify-between items-end">
@@ -146,8 +146,11 @@ const Hero = () => {
               <button 
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
-                className={`h-[2px] w-4 transition-colors ${idx === currentIndex ? 'bg-accent' : 'bg-white/20 hover:bg-white/40'}`}
-              />
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`h-6 w-6 flex items-center justify-center group`}
+              >
+                <div className={`h-[2px] w-4 transition-colors ${idx === currentIndex ? 'bg-accent' : 'bg-white/20 group-hover:bg-white/40'}`} />
+              </button>
             ))}
           </div>
         </div>

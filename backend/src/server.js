@@ -26,15 +26,22 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Rate Limiting para Autenticación
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // Límite de 10 peticiones por IP en la ventana
+  max: 5, // Limite estricto de seguridad para producción
   message: { message: 'Demasiados intentos. Por favor, inténtelo de nuevo más tarde.' }
 });
 
 // Routes
 const authRoutes = require('./routes/auth.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const newsletterRoutes = require('./routes/newsletter.routes');
+const settingsRoutes = require('./routes/settings.routes');
+const favoritesRoutes = require('./routes/favorites.routes');
+
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // Test Route
 app.get('/api/health', (req, res) => {

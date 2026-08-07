@@ -2,11 +2,18 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 
 const WhatsAppButton = () => {
-  const whatsappNumber = useStore(state => state.siteConfig.whatsappNumber);
+  const { businessSettings, fetchBusinessSettings } = useStore();
+
+  React.useEffect(() => {
+    if (!businessSettings) {
+      fetchBusinessSettings();
+    }
+  }, [businessSettings, fetchBusinessSettings]);
 
   const handleClick = () => {
-    const text = encodeURIComponent("Hola JV GOLD & CO LLC, me gustaría hacer una consulta general.");
-    window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
+    const waNumber = businessSettings?.whatsappNumber || "1234567890";
+    const text = encodeURIComponent(businessSettings?.defaultWhatsappMessage || "Hello JV GOLD & CO LLC, I would like to make a general inquiry.");
+    window.open(`https://wa.me/${waNumber}?text=${text}`, '_blank');
   };
 
   return (

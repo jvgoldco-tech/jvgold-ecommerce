@@ -16,7 +16,7 @@ const Home = () => {
       </div>
       
       {/* Content that slides over the Hero */}
-      <section className="w-full relative z-10 bg-background md:shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+      <section className="w-full relative z-10 bg-[#1a1410] md:shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
         <CategoryCoverGrid />
       </section>
     </div>

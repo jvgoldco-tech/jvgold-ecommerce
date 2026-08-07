@@ -171,21 +171,17 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
 };
 
 const Inventory = () => {
-  const products = useStore(state => state.products);
-  const addProduct = useStore(state => state.addProduct);
-  const updateProduct = useStore(state => state.updateProduct);
-  const deleteProduct = useStore(state => state.deleteProduct);
+  const { products, addProduct, updateProduct, deleteProduct } = useStore();
   const catalogs = useStore(state => state.catalogs);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-
-  // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [sortBy, setSortBy] = useState('Newest');
   const [filterLocation, setFilterLocation] = useState('All');
+  const [sortBy, setSortBy] = useState('Newest');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -234,16 +230,30 @@ const Inventory = () => {
   const countOutOfStock = products.filter(p => p.status.includes('Agotado')).length;
 
   return (
-    <div className="h-full flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col lg:flex-row gap-6">
       
       {/* LEFT SIDEBAR: Filters */}
-      <div className="w-full lg:w-64 flex-shrink-0 flex flex-col gap-6">
-        <div className="flex items-center space-x-3">
-          <h2 className="text-xl font-display text-black font-semibold">Inventory</h2>
-          <span className="px-2 py-0.5 bg-white text-gray-700 text-[10px] rounded-full border border-black/5 font-medium shadow-sm">
-            {countAll} total
-          </span>
+      <div className="w-full lg:w-64 flex-shrink-0">
+        {/* Mobile: header with toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <h2 className="text-xl font-display text-black font-semibold">Inventory</h2>
+            <span className="px-2 py-0.5 bg-white text-gray-700 text-[10px] rounded-full border border-black/5 font-medium shadow-sm">
+              {countAll} total
+            </span>
+          </div>
+          {/* Mobile filter toggle */}
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="lg:hidden flex items-center space-x-1 text-xs border border-black/10 rounded-full px-3 py-1.5 text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <span>{showMobileFilters ? 'Hide' : 'Filters'}</span>
+            <span className="text-[10px]">{showMobileFilters ? '▲' : '▼'}</span>
+          </button>
         </div>
+        
+        {/* Filter panels - always shown on desktop, togglable on mobile */}
+        <div className={`flex flex-col gap-6 ${showMobileFilters ? 'block' : 'hidden lg:flex'}`}>
 
         {/* 2x2 Status Grid */}
         <div>
@@ -312,7 +322,8 @@ const Inventory = () => {
         >
           <span>↻ Clear Filters</span>
         </button>
-      </div>
+        </div>{/* end collapsible filter panels */}
+      </div>{/* end sidebar */}
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col h-full min-h-[600px]">

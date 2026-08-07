@@ -20,7 +20,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (!token) {
-      setError('Enlace inválido o incompleto.');
+      setError('Invalid or missing recovery link.');
     }
   }, [token]);
 
@@ -30,11 +30,11 @@ const ResetPassword = () => {
     setSuccess('');
     
     if (newPassword.length < 12) {
-      setError('La contraseña debe tener al menos 12 caracteres.');
+      setError('Password must be at least 12 characters.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
+      setError('Passwords do not match.');
       return;
     }
 
@@ -42,13 +42,13 @@ const ResetPassword = () => {
     
     try {
       const response = await api.post('/auth/reset-password', { token, newPassword });
-      setSuccess(response.data.message || 'Contraseña actualizada exitosamente.');
-      setTimeout(() => navigate('/admin/login'), 4000);
+      setSuccess(response.data.message || 'Password successfully updated.');
+      setTimeout(() => navigate('/login'), 4000);
     } catch (err) {
       if (err.response && err.response.data) {
-        setError(err.response.data.message || 'Error al restablecer contraseña.');
+        setError(err.response.data.message || 'Error resetting password.');
       } else {
-        setError('Error de conexión al servidor.');
+        setError('Server connection error.');
       }
     } finally {
       setLoading(false);
@@ -67,28 +67,28 @@ const ResetPassword = () => {
           </h1>
         )}
         <div className="w-12 h-[1px] bg-accent mx-auto mb-4"></div>
-        <span className="text-xs tracking-[0.2em] text-primary/40 uppercase">Nueva Contraseña</span>
+        <span className="text-xs tracking-[0.2em] text-primary/40 uppercase">New Password</span>
       </div>
 
       <div className="bg-white border border-black/5 p-8 w-full max-w-md shadow-sm">
         {!token ? (
           <div className="text-center space-y-4">
-            <p className="text-red-500 text-sm font-serif italic mb-4">Enlace de recuperación inválido o faltante.</p>
-            <Link to="/admin/login" className="text-xs tracking-widest text-primary hover:text-accent uppercase">
-              Ir al Login
+            <p className="text-red-500 text-sm font-serif italic mb-4">Invalid or missing recovery link.</p>
+            <Link to="/login" className="text-xs tracking-widest text-primary hover:text-accent uppercase">
+              Go to Login
             </Link>
           </div>
         ) : success ? (
           <div className="text-center space-y-4">
             <div className="text-green-600 text-sm font-serif italic mb-4">{success}</div>
-            <Link to="/admin/login" className="text-xs tracking-widest text-primary hover:text-accent uppercase">
-              Ir al Login
+            <Link to="/login" className="text-xs tracking-widest text-primary hover:text-accent uppercase">
+              Go to Login
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Nueva Contraseña (Mín. 12 carac.)</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">New Password (Min. 12 chars)</label>
               <div className="relative">
                 <input 
                   type={showPassword ? 'text' : 'password'} 
@@ -108,7 +108,7 @@ const ResetPassword = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Confirmar Contraseña</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Confirm Password</label>
               <input 
                 type={showPassword ? 'text' : 'password'} 
                 required
@@ -125,7 +125,7 @@ const ResetPassword = () => {
               disabled={loading}
               className="w-full bg-primary text-white text-xs tracking-widest py-4 hover:bg-black transition-colors uppercase font-medium flex justify-center items-center mt-2"
             >
-              {loading ? <Loader2 className="animate-spin" size={16} /> : 'Guardar Contraseña'}
+              {loading ? <Loader2 className="animate-spin" size={16} /> : 'Save Password'}
             </button>
           </form>
         )}

@@ -39,13 +39,15 @@ export const useStore = create(
         try {
           const response = await api.get('/auth/me');
           set({ user: response.data.user, isAuthenticated: true, isCheckingAuth: false });
+          get().fetchFavorites();
         } catch (error) {
-          set({ user: null, isAuthenticated: false, isCheckingAuth: false });
+          set({ user: null, isAuthenticated: false, isCheckingAuth: false, favorites: [] });
         }
       },
 
       login: (userData) => {
         set({ user: userData, isAuthenticated: true });
+        get().fetchFavorites();
       },
 
       logout: async () => {
@@ -54,13 +56,14 @@ export const useStore = create(
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
-          set({ user: null, isAuthenticated: false });
+          set({ user: null, isAuthenticated: false, favorites: [] });
         }
       },
 
       // State
       products: mockProducts,
       catalogs: initialCatalogs,
+      businessSettings: null,
       siteConfig: {
         brand: {
           name: 'JV GOLD & CO LLC',
@@ -69,7 +72,7 @@ export const useStore = create(
         },
         whatsappNumber: '1234567890',
         hero: {
-          backgroundImage: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&q=80',
+          backgroundImage: '',
           headline: 'Pieces that',
           highlightedWord: 'endure',
           subtitle: 'Every jewel tells a story of craftsmanship and distinction.',
@@ -90,8 +93,27 @@ export const useStore = create(
           searchPlaceholder: 'Search...'
         }
       },
-      cart: [],
+      shoppingList: [],
       favorites: [],
+
+      // API Actions
+      fetchBusinessSettings: async () => {
+        try {
+          const response = await api.get('/settings');
+          set({ businessSettings: response.data });
+        } catch (error) {
+          console.error('Error fetching settings:', error);
+        }
+      },
+      updateBusinessSettings: async (newData) => {
+        try {
+          const response = await api.put('/settings', newData);
+          set({ businessSettings: response.data });
+        } catch (error) {
+          console.error('Error updating settings:', error);
+          throw error;
+        }
+      },
 
       // Catalog Actions
       addCatalogItem: (catalogName, item) => set(state => ({
@@ -129,6 +151,12 @@ export const useStore = create(
           catalogs: { ...state.catalogs, [catalogName]: list.filter(i => i !== itemOrId) }
         };
       }),
+      reorderCatalogItems: (catalogName, newOrder) => set(state => ({
+        catalogs: {
+          ...state.catalogs,
+          [catalogName]: newOrder
+        }
+      })),
 
       // Inventory Actions
       addProduct: (product) => set(state => {
@@ -167,15 +195,67 @@ export const useStore = create(
         products: state.products.filter(p => p.id !== id)
       })),
 
-      // Cart & Favorites
-      addToCart: (id) => set(state => ({ cart: [...state.cart, id] })),
-      removeFromCart: (id) => set(state => ({ cart: state.cart.filter(item => item !== id) })),
-      toggleFavorite: (id) => set(state => {
-        if (state.favorites.includes(id)) {
-          return { favorites: state.favorites.filter(item => item !== id) };
+      // Shopping List & Favorites
+      addToShoppingList: (product) => set(state => {
+        const existing = state.shoppingList.find(item => item.id === product.id);
+        if (existing) {
+          return {
+            shoppingList: state.shoppingList.map(item => 
+              item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            )
+          };
         }
-        return { favorites: [...state.favorites, id] };
+        return { shoppingList: [...state.shoppingList, { id: product.id, quantity: 1, product }] };
       }),
+      updateQuantity: (id, amount) => set(state => ({
+        shoppingList: state.shoppingList.map(item => {
+          if (item.id === id) {
+            const newQ = Math.max(1, item.quantity + amount);
+            return { ...item, quantity: newQ };
+          }
+          return item;
+        })
+      })),
+      removeFromShoppingList: (id) => set(state => ({
+        shoppingList: state.shoppingList.filter(item => item.id !== id)
+      })),
+      clearShoppingList: () => set({ shoppingList: [] }),
+
+      fetchFavorites: async () => {
+        try {
+          const response = await api.get('/favorites');
+          set({ favorites: response.data });
+        } catch (error) {
+          console.error('Error fetching favorites', error);
+        }
+      },
+
+      showLoginPrompt: false,
+      setShowLoginPrompt: (show) => set({ showLoginPrompt: show }),
+
+      toggleFavorite: async (id) => {
+        const state = get();
+        if (!state.isAuthenticated) {
+          set({ showLoginPrompt: true });
+          return;
+        }
+
+        // Optimistic update
+        const isFav = state.favorites.includes(id);
+        set(state => ({
+          favorites: isFav ? state.favorites.filter(item => item !== id) : [...state.favorites, id]
+        }));
+
+        try {
+          await api.post(`/favorites/${id}`);
+        } catch (error) {
+          console.error('Error toggling favorite on server:', error);
+          // Rollback if needed, though rare
+          set(state => ({
+            favorites: isFav ? [...state.favorites, id] : state.favorites.filter(item => item !== id)
+          }));
+        }
+      },
 
       // Site Config
       updateBrandConfig: (config) => set(state => ({
@@ -195,7 +275,7 @@ export const useStore = create(
       }))
     }),
     {
-      name: 'jv-gold-co-store-v5', // bumped version to clear old state due to schema changer old state
+      name: 'jv-gold-co-store-v7', // bumped version to clear old mock state
     }
   )
 );

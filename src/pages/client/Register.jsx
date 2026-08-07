@@ -24,11 +24,11 @@ const Register = () => {
     setSuccess('');
     
     if (password.length < 12) {
-      setError('La contraseña debe tener al menos 12 caracteres.');
+      setError('Password must be at least 12 characters.');
       return;
     }
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
+      setError('Passwords do not match.');
       return;
     }
 
@@ -36,14 +36,14 @@ const Register = () => {
     
     try {
       const response = await api.post('/auth/register', { name, email, password });
-      setSuccess(response.data.message || 'Registro exitoso. Revisa tu correo.');
+      setSuccess(response.data.message || 'Registration successful. Check your email.');
       // Opcional: Redirigir al login después de unos segundos
-      setTimeout(() => navigate('/admin/login'), 4000);
+      setTimeout(() => navigate('/login'), 4000);
     } catch (err) {
       if (err.response && err.response.data) {
-        setError(err.response.data.message || 'Error al registrar usuario.');
+        setError(err.response.data.message || 'Error registering user.');
       } else {
-        setError('Error de conexión al servidor.');
+        setError('Server connection error.');
       }
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ const Register = () => {
 
       <div className="w-full max-w-md text-center mb-8 flex flex-col items-center">
         {(brandConfig.displayMode === 'LOGO' || brandConfig.displayMode === 'BOTH') && brandConfig.logoUrl && (
-          <img src={brandConfig.logoUrl} alt="Logo" className="h-12 object-contain mb-4" />
+          <img src={brandConfig.logoUrl} alt="Logo" width="160" height="48" className="h-12 w-auto object-contain mb-4" />
         )}
         {(brandConfig.displayMode === 'TEXT' || brandConfig.displayMode === 'BOTH') && (
           <h1 className="font-display text-4xl mb-4 tracking-widest uppercase text-primary">
@@ -69,22 +69,22 @@ const Register = () => {
           </h1>
         )}
         <div className="w-12 h-[1px] bg-accent mx-auto mb-4"></div>
-        <span className="text-xs tracking-[0.2em] text-primary/40 uppercase">Crear Cuenta</span>
+        <span className="text-xs tracking-[0.2em] text-primary/40 uppercase">Create Account</span>
       </div>
 
       <div className="bg-white border border-black/5 p-8 w-full max-w-md shadow-sm">
         {success ? (
           <div className="text-center space-y-4">
             <div className="text-green-600 text-sm font-serif italic mb-4">{success}</div>
-            <Link to="/admin/login" className="text-xs tracking-widest text-primary hover:text-accent uppercase">
-              Ir al Login
+            <Link to="/login" className="text-xs tracking-widest text-primary hover:text-accent uppercase">
+              Go to Login
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Nombre Completo</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Full Name</label>
               <input 
                 type="text" 
                 required
@@ -95,7 +95,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Correo Electrónico</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Email Address</label>
               <input 
                 type="email" 
                 required
@@ -106,18 +106,19 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Contraseña (Mín. 12 carac.)</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Password (Min. 12 chars)</label>
               <div className="relative">
                 <input 
                   type={showPassword ? 'text' : 'password'} 
                   required
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                  className="w-full bg-[#f9f9f9] border border-black/10 px-4 py-3 text-sm focus:outline-none focus:border-accent" 
+                  className="w-full bg-[#f9f9f9] border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all" 
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/40 hover:text-primary transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -126,7 +127,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Confirmar Contraseña</label>
+              <label className="block text-[10px] tracking-widest text-primary/60 uppercase mb-2">Confirm Password</label>
               <input 
                 type={showPassword ? 'text' : 'password'} 
                 required
@@ -143,12 +144,12 @@ const Register = () => {
               disabled={loading}
               className="w-full bg-primary text-white text-xs tracking-widest py-4 hover:bg-black transition-colors uppercase font-medium flex justify-center items-center mt-2"
             >
-              {loading ? <Loader2 className="animate-spin" size={16} /> : 'Registrarse'}
+              {loading ? <Loader2 className="animate-spin" size={16} /> : 'Sign Up'}
             </button>
             
             <div className="text-center mt-6">
-              <Link to="/admin/login" className="text-[10px] tracking-widest text-primary/60 hover:text-primary uppercase transition-colors">
-                ¿Ya tienes cuenta? Inicia sesión
+              <Link to="/login" className="text-[10px] tracking-widest text-primary/60 hover:text-primary uppercase transition-colors">
+                Already have an account? Sign in
               </Link>
             </div>
           </form>

@@ -16,7 +16,7 @@ const SimpleCatalogList = ({ title, items, catalogName }) => {
   };
 
   return (
-    <div className="bg-white border border-black/5 flex flex-col h-[400px]">
+    <div className="bg-white border border-black/5 flex flex-col h-[320px] sm:h-[400px]">
       <div className="p-4 border-b border-black/5 bg-[#fbfbfb]">
         <h3 className="font-display text-lg">{title}</h3>
       </div>

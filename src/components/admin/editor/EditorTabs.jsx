@@ -1,7 +1,7 @@
 import React from 'react';
 import ImageCropper from '../../ui/ImageCropper';
 import { TextInputWithCount, TextAreaWithCount } from '../../ui/InputWithCount';
-import { Plus, Trash2, MessageCircle } from 'lucide-react';
+import { Plus, Trash2, MessageCircle, GripVertical } from 'lucide-react';
 
 export const BrandEditor = ({ form, onChange }) => (
   <div className="space-y-6">
@@ -141,7 +141,8 @@ export const HeroEditor = ({ form, onChange, products }) => {
                 onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, idx)}
-                className="flex items-center justify-between bg-white p-2 border border-black/10 shadow-sm cursor-move hover:border-accent transition-colors"
+                onDragEnd={() => setDraggedIdx(null)}
+                className={`flex items-center justify-between p-2 border border-black/10 shadow-sm cursor-move transition-all duration-200 ${draggedIdx === idx ? 'opacity-40 scale-[0.98] ring-1 ring-accent bg-[#f9f9f9]' : 'bg-white hover:border-accent'}`}
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gray-100 overflow-hidden shrink-0">
@@ -185,64 +186,113 @@ export const WhatsappEditor = ({ form, onChange }) => (
   <div className="space-y-6">
     <TextInputWithCount 
       label="WhatsApp Number" 
-      value={form} 
-      onChange={(v) => onChange(v)} 
+      value={form.number} 
+      onChange={(v) => onChange('number', v)} 
       maxLength={20} 
     />
-    <p className="text-xs text-primary/50 mt-2">Include your country code, without the + sign. Example: 1234567890</p>
+    <p className="text-[10px] text-primary/50 mt-1 mb-4">Include your country code, without the + sign. Example: 1234567890</p>
+    
+    <TextAreaWithCount 
+      label="Default WhatsApp Message" 
+      rows="3" 
+      value={form.message} 
+      onChange={(v) => onChange('message', v)} 
+      maxLength={200} 
+    />
+    <p className="text-[10px] text-primary/50 mt-1">This message will be pre-filled when a customer requests information about their Shopping List.</p>
   </div>
 );
 
-export const CollectionsEditor = ({ collections, addCollection, deleteCollection, updateCollection, expandedCollection, setExpandedCollection }) => (
-  <div className="space-y-4">
-    <div className="flex justify-between items-center mb-6">
-       <span className="text-sm font-medium">{collections.length} Collections</span>
-       <button onClick={addCollection} className="flex items-center space-x-2 text-xs tracking-widest bg-primary text-white px-4 py-2 hover:bg-black">
-         <Plus size={14} /> <span>ADD COLLECTION</span>
-       </button>
-    </div>
-    {collections.map(c => (
-      <div key={c.id} className="bg-white border border-black/5 overflow-hidden">
-        <div 
-          className="p-4 flex items-center justify-between cursor-pointer hover:bg-[#f9f9f9]"
-          onClick={() => setExpandedCollection(expandedCollection === c.id ? null : c.id)}
-        >
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gray-100 overflow-hidden">
-              <img src={c.coverImage} alt={c.name} className="w-full h-full object-cover" />
-            </div>
-            <span className="font-medium text-sm">{c.name}</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button onClick={(e) => { e.stopPropagation(); deleteCollection('collections', c.id); }} className="text-primary/40 hover:text-red-500 p-2">
-              <Trash2 size={16} />
-            </button>
-          </div>
-        </div>
-        {expandedCollection === c.id && (
-          <div className="p-4 border-t border-black/5 bg-[#fbfbfb] space-y-4">
-            <TextInputWithCount 
-              label="Name" 
-              value={c.name} 
-              onChange={v => updateCollection('collections', c, { ...c, name: v })} 
-              maxLength={40} 
-            />
-            <ImageCropper 
-              label="Cover Image (Proporción 3:4)"
-              aspectRatio={3/4} 
-              currentImageUrl={c.coverImage}
-              onUploadSuccess={(url) => updateCollection('collections', c, { ...c, coverImage: url })}
-            />
-            <TextAreaWithCount 
-              label="Description" 
-              rows="3" 
-              value={c.description} 
-              onChange={v => updateCollection('collections', c, { ...c, description: v })} 
-              maxLength={150} 
-            />
-          </div>
-        )}
+export const CollectionsEditor = ({ collections, addCollection, deleteCollection, updateCollection, reorderCollections, expandedCollection, setExpandedCollection }) => {
+  const [draggedIdx, setDraggedIdx] = React.useState(null);
+
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIdx) return;
+    
+    const newItems = [...collections];
+    const item = newItems.splice(draggedIdx, 1)[0];
+    newItems.splice(targetIdx, 0, item);
+    reorderCollections(newItems);
+    setDraggedIdx(null);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-6">
+         <span className="text-sm font-medium">{collections.length} Collections</span>
+         <button onClick={addCollection} className="flex items-center space-x-2 text-xs tracking-widest bg-primary text-white px-4 py-2 hover:bg-black">
+           <Plus size={14} /> <span>ADD COLLECTION</span>
+         </button>
       </div>
-    ))}
-  </div>
-);
+      {collections.map((c, idx) => (
+        <div 
+          key={c.id} 
+          className={`border border-black/5 overflow-hidden transition-all duration-200 ${draggedIdx === idx ? 'opacity-40 scale-[0.98] ring-1 ring-accent bg-[#f9f9f9]' : 'bg-white'}`}
+          draggable
+          onDragStart={(e) => handleDragStart(e, idx)}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, idx)}
+          onDragEnd={() => setDraggedIdx(null)}
+        >
+          <div 
+            className="p-4 flex items-center justify-between cursor-move hover:bg-black/[0.02]"
+            onClick={(e) => {
+              if (!e.defaultPrevented) {
+                setExpandedCollection(expandedCollection === c.id ? null : c.id);
+              }
+            }}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gray-100 overflow-hidden cursor-pointer" onClick={(e) => { e.preventDefault(); setExpandedCollection(expandedCollection === c.id ? null : c.id); }}>
+                <img src={c.coverImage} alt={c.name} className="w-full h-full object-cover pointer-events-none" />
+              </div>
+              <span className="font-medium text-sm cursor-pointer" onClick={(e) => { e.preventDefault(); setExpandedCollection(expandedCollection === c.id ? null : c.id); }}>{c.name}</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-[9px] text-gray-400">Order: {idx + 1}</span>
+              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteCollection('collections', c.id); }} className="text-primary/40 hover:text-red-500 p-2">
+                <Trash2 size={16} />
+              </button>
+              <div className="text-gray-300 cursor-move pl-2 border-l border-black/5">
+                <GripVertical size={16} />
+              </div>
+            </div>
+          </div>
+          {expandedCollection === c.id && (
+            <div className="p-4 border-t border-black/5 bg-[#fbfbfb] space-y-4 cursor-default">
+              <TextInputWithCount 
+                label="Name" 
+                value={c.name} 
+                onChange={v => updateCollection('collections', c, { ...c, name: v })} 
+                maxLength={40} 
+              />
+              <ImageCropper 
+                label="Cover Image (Proporción 3:4)"
+                aspectRatio={3/4} 
+                currentImageUrl={c.coverImage}
+                onUploadSuccess={(url) => updateCollection('collections', c, { ...c, coverImage: url })}
+              />
+              <TextAreaWithCount 
+                label="Description" 
+                rows="3" 
+                value={c.description} 
+                onChange={v => updateCollection('collections', c, { ...c, description: v })} 
+                maxLength={150} 
+              />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};

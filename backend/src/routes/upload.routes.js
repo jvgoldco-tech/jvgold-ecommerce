@@ -27,15 +27,20 @@ router.post('/', requireAuth, requireAdmin, (req, res) => {
       // Generar nombre único con formato webp
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const filename = req.file.fieldname + '-' + uniqueSuffix + '.webp';
-      const outputPath = path.join(__dirname, '../../../uploads', filename);
+      const uploadsDir = path.join(__dirname, '../../uploads');
+      const outputPath = path.join(uploadsDir, filename);
+
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
 
       // Procesar la imagen con sharp desde el buffer en memoria
       await sharp(req.file.buffer)
         .webp({ quality: 80 })
         .toFile(outputPath);
 
-      // Devolver la URL pública de la imagen
-      const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+      // Devolver la URL relativa de la imagen (el proxy de Vite la sirve en dev, y en producción el servidor la maneja)
+      const fileUrl = `/uploads/${filename}`;
       
       res.status(200).json({ 
         message: 'Imagen subida y optimizada exitosamente.',

@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Heart, Tag, Grid3X3, ShoppingBag, X } from 'lucide-react';
+import { Sparkles, Heart, Tag, Grid3X3, ShoppingBag, X, User, LayoutDashboard } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import ShoppingListDrawer from '../client/ShoppingListDrawer';
 
 const FabNav = () => {
   const navigate = useNavigate();
-  const cart = useStore(state => state.cart);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const shoppingList = useStore(state => state.shoppingList);
   const favorites = useStore(state => state.favorites);
   const collections = useStore(state => state.catalogs.collections);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isAuthenticated = useStore(state => state.isAuthenticated);
+  const user = useStore(state => state.user);
+  const isAdmin = isAuthenticated && user?.role === 'admin';
   
   // Metallic gold gradient used for borders and rings
   const goldGradient = "bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728]";
   const iconColor = "text-[#E6C762]";
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex flex-col items-center">
+    <>
+      {/* Backdrop for Collections Menu */}
+      <div 
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[35] transition-opacity duration-300 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsMenuOpen(false)}
+      />
+      
+      <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[40] pointer-events-auto flex flex-col items-center">
       
       {/* Upward Popup Menu for Collections */}
       <div 
@@ -24,7 +36,7 @@ const FabNav = () => {
         <div className="bg-[#1c0f16]/30 backdrop-blur-3xl transform-gpu shadow-[0_15px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] border border-[#BF953F]/40 rounded-3xl p-4 flex flex-col min-w-[200px]">
           <div className="flex justify-between items-center mb-4 pb-2 border-b border-[#BF953F]/20">
             <span className="text-white text-xs tracking-[0.2em] uppercase font-medium">Collections</span>
-            <button onClick={() => setIsMenuOpen(false)} className="text-white/60 hover:text-white">
+            <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu" className="text-white/60 hover:text-white w-8 h-8 flex justify-center items-center rounded-full">
               <X size={16} />
             </button>
           </div>
@@ -76,55 +88,86 @@ const FabNav = () => {
         
         <button 
           onClick={() => { setIsMenuOpen(false); navigate('/new-arrivals'); }} 
+          aria-label="New Arrivals"
           title="Novedades" 
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
+          className={`w-11 h-11 md:w-8 md:h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
         >
-          <Sparkles size={16} strokeWidth={1.5} />
+          <Sparkles size={18} strokeWidth={1.5} className="md:w-4 md:h-4" />
         </button>
         
         <button 
           onClick={() => { setIsMenuOpen(false); navigate('/favorites'); }} 
+          aria-label="Favorites"
           title="Favoritos" 
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
+          className={`w-11 h-11 md:w-8 md:h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
         >
-          <Heart size={16} strokeWidth={1.5} className={favorites.length > 0 ? "fill-current" : ""} />
+          <Heart size={18} strokeWidth={1.5} className={`md:w-4 md:h-4 ${favorites.length > 0 ? "fill-[#FCF6BA] text-[#FCF6BA]" : ""}`} />
           {favorites.length > 0 && (
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#FCF6BA] rounded-full shadow-[0_0_8px_rgba(252,246,186,0.8)]"></span>
+            <span className="absolute top-1 right-1 md:top-0 md:right-0 w-2.5 h-2.5 md:w-2 md:h-2 bg-[#FCF6BA] rounded-full shadow-[0_0_8px_rgba(252,246,186,0.8)] border border-black"></span>
           )}
         </button>
 
         <button 
           onClick={() => { setIsMenuOpen(false); navigate('/promotions'); }} 
+          aria-label="Promotions"
           title="Ofertas" 
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
+          className={`w-11 h-11 md:w-8 md:h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
         >
-          <Tag size={16} strokeWidth={1.5} />
+          <Tag size={18} strokeWidth={1.5} className="md:w-4 md:h-4" />
         </button>
 
         {/* Catalog / Grid - Special central/highlighted button with large textured gold ring */}
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)} 
+          aria-label="Collections Menu"
           title="Colecciones" 
-          className={`relative w-10 h-10 rounded-full flex items-center justify-center p-[1px] ${goldGradient} shadow-[0_0_10px_rgba(191,149,63,0.3)] hover:scale-105 transition-transform duration-300 mx-1`}
+          aria-expanded={isMenuOpen}
+          className={`relative w-14 h-14 md:w-10 md:h-10 rounded-full flex items-center justify-center p-[1px] ${goldGradient} shadow-[0_0_10px_rgba(191,149,63,0.3)] hover:scale-105 transition-transform duration-300 mx-1`}
         >
           <div className="w-full h-full rounded-full bg-[#1c0f16]/40 backdrop-blur-xl transform-gpu flex items-center justify-center border border-black/30 shadow-inner">
-            <Grid3X3 size={18} strokeWidth={1.5} className={isMenuOpen ? "text-white" : iconColor} />
+            <Grid3X3 size={20} strokeWidth={1.5} className={`md:w-[18px] md:h-[18px] ${isMenuOpen ? "text-white" : iconColor}`} />
           </div>
         </button>
 
         <button 
-          onClick={() => { setIsMenuOpen(false); navigate('/cart'); }} 
-          title="Carrito" 
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
+          onClick={() => { setIsMenuOpen(false); setIsDrawerOpen(true); }} 
+          aria-label="Shopping Cart"
+          className={`w-11 h-11 md:w-8 md:h-8 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
         >
-          <ShoppingBag size={16} strokeWidth={1.5} className={cart.length > 0 ? "fill-current" : ""} />
-          {cart.length > 0 && (
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#FCF6BA] rounded-full shadow-[0_0_8px_rgba(252,246,186,0.8)]"></span>
+          <ShoppingBag size={18} strokeWidth={1.5} className={`md:w-4 md:h-4 ${shoppingList.length > 0 ? "fill-[#FCF6BA] text-[#FCF6BA]" : ""}`} />
+          {shoppingList.length > 0 && (
+            <span className="absolute top-0 right-0 md:-top-1 md:-right-1 w-4 h-4 bg-[#BF953F] text-black border border-black rounded-full flex items-center justify-center text-[9px] font-bold shadow-[0_0_8px_rgba(191,149,63,0.8)]">
+              {shoppingList.reduce((acc, item) => acc + item.quantity, 0)}
+            </span>
           )}
         </button>
 
+        {/* User / Profile / Admin Panel button - mobile only */}
+        {isAdmin ? (
+          <button 
+            onClick={() => { setIsMenuOpen(false); navigate('/admin'); }} 
+            aria-label="Admin Panel"
+            title="Admin Panel"
+            className={`md:hidden w-11 h-11 rounded-full flex items-center justify-center bg-white/10 border border-[#BF953F]/50 ${iconColor} hover:text-white hover:bg-white/20 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
+          >
+            <LayoutDashboard size={18} strokeWidth={1.5} />
+          </button>
+        ) : (
+          <button 
+            onClick={() => { setIsMenuOpen(false); navigate(isAuthenticated ? '/profile' : '/login'); }} 
+            aria-label={isAuthenticated ? 'My Profile' : 'Log In'}
+            title={isAuthenticated ? 'Mi Perfil' : 'Iniciar Sesión'}
+            className={`md:hidden w-11 h-11 rounded-full flex items-center justify-center ${iconColor} hover:text-white hover:bg-white/10 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}
+          >
+            <User size={18} strokeWidth={1.5} className={isAuthenticated ? 'fill-[#FCF6BA]/30 text-[#FCF6BA]' : ''} />
+          </button>
+        )}
+
       </div>
-    </div>
+      </div>
+      
+      <ShoppingListDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+    </>
   );
 };
 

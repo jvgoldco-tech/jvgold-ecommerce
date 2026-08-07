@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import FabNav from './FabNav';
 import WhatsAppButton from './WhatsAppButton';
+import LoginPromptModal from '../client/LoginPromptModal';
 import Footer from './Footer';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
@@ -35,6 +36,8 @@ const MainLayout = () => {
       <Footer />
       <FabNav />
       <WhatsAppButton />
+      {/* Global Modals */}
+      <LoginPromptModal />
     </div>
   );
 };

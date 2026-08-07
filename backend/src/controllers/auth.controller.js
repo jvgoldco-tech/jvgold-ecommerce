@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const prisma = require('../utils/prisma');
-const { sendVerificationEmail } = require('../utils/email');
+const { sendConfirmationEmail, sendPasswordResetEmail } = require('../utils/mailer');
 
 // Fase 3: Registro Seguro
 const register = async (req, res) => {
@@ -37,8 +37,11 @@ const register = async (req, res) => {
       }
     });
 
+    // Fetch Business Settings for the email branding
+    const businessSettings = await prisma.businessSettings.findUnique({ where: { id: 'singleton' } });
+
     // Enviar email de confirmación
-    await sendVerificationEmail(email, rawToken);
+    await sendConfirmationEmail(email, rawToken, name, businessSettings);
 
     res.status(200).json({ message: 'Si el correo es válido, recibirás un enlace de confirmación.' });
   } catch (error) {
@@ -176,13 +179,13 @@ const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
     const user = await prisma.user.findUnique({ where: { email } });
-    const genericMessage = 'Si el correo existe, hemos enviado un enlace de recuperación.';
+    const genericMessage = 'If the email exists, we have sent a recovery link.';
 
     if (!user) return res.status(200).json({ message: genericMessage });
 
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const tokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+    const tokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
 
     await prisma.user.update({
       where: { id: user.id },
@@ -192,8 +195,10 @@ const forgotPassword = async (req, res) => {
       }
     });
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
-    console.log(`[EMAIL SIMULATION] Reset Password URL for ${email}: \n${resetUrl}`);
+    // Fetch Business Settings for the email branding
+    const businessSettings = await prisma.businessSettings.findUnique({ where: { id: 'singleton' } });
+
+    await sendPasswordResetEmail(email, rawToken, user.name, businessSettings);
 
     res.status(200).json({ message: genericMessage });
   } catch (error) {
@@ -215,7 +220,7 @@ const resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'El enlace es inválido o ha expirado.' });
+      return res.status(400).json({ message: 'The link is invalid or has expired.' });
     }
 
     const salt = await bcrypt.genSalt(12);
@@ -237,7 +242,7 @@ const resetPassword = async (req, res) => {
     // Opcional: borrar registros de Session de la tabla
     await prisma.session.deleteMany({ where: { userId: user.id } });
 
-    res.status(200).json({ message: 'Contraseña cambiada exitosamente. Debes iniciar sesión de nuevo.' });
+    res.status(200).json({ message: 'Password changed successfully. You must log in again.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error interno' });
@@ -272,6 +277,41 @@ const logout = async (req, res) => {
   res.status(200).json({ message: 'Sesión cerrada exitosamente.' });
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect.' });
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: newPasswordHash,
+        tokenVersion: { increment: 1 }
+      }
+    });
+
+    await prisma.session.deleteMany({ where: { userId: user.id } });
+
+    res.status(200).json({ message: 'Password changed successfully. Please log in again.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
 module.exports = {
   register,
   verify,
@@ -279,5 +319,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getMe,
-  logout
+  logout,
+  changePassword
 };

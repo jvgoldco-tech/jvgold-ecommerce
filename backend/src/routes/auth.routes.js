@@ -35,6 +35,13 @@ const resetPasswordSchema = z.object({
   })
 });
 
+const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1, "Current password required"),
+    newPassword: z.string().min(12, "New password must be at least 12 characters")
+  })
+});
+
 // Rutas (Fase 3, 4 y 5)
 router.post('/register', validate(registerSchema), authController.register);
 router.get('/verify', authController.verify);
@@ -45,5 +52,6 @@ router.get('/me', requireAuth, authController.getMe);
 // Rutas (Fase 7)
 router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
+router.put('/change-password', requireAuth, validate(changePasswordSchema), authController.changePassword);
 
 module.exports = router;

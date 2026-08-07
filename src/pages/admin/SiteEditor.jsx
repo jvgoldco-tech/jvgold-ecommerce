@@ -6,18 +6,28 @@ import { BrandEditor, TextsEditor, HeroEditor, FooterEditor, WhatsappEditor, Col
 const SiteEditor = () => {
   const heroConfig = useStore(state => state.siteConfig.hero);
   const footerConfig = useStore(state => state.siteConfig.footer);
-  const whatsappNumber = useStore(state => state.siteConfig.whatsappNumber);
+  const { businessSettings, fetchBusinessSettings, updateBusinessSettings } = useStore();
+  
+  React.useEffect(() => {
+    if (!businessSettings) {
+      fetchBusinessSettings();
+    }
+  }, [businessSettings, fetchBusinessSettings]);
+
+  const whatsappNumber = businessSettings?.whatsappNumber || '';
+  const defaultWhatsappMessage = businessSettings?.defaultWhatsappMessage || '';
+
   const catalogs = useStore(state => state.catalogs);
   const products = useStore(state => state.products);
   const collections = catalogs.collections;
 
   const updateHeroConfig = useStore(state => state.updateHeroConfig);
   const updateFooterConfig = useStore(state => state.updateFooterConfig);
-  const updateWhatsappNumber = useStore(state => state.updateWhatsappNumber);
   
   const addCatalogItem = useStore(state => state.addCatalogItem);
   const updateCatalogItem = useStore(state => state.updateCatalogItem);
   const deleteCatalogItem = useStore(state => state.deleteCatalogItem);
+  const reorderCatalogItems = useStore(state => state.reorderCatalogItems);
 
   const [activeTab, setActiveTab] = useState('BRAND'); // BRAND | TEXTS | HERO | COLLECTIONS | FOOTER | WHATSAPP
   
@@ -25,9 +35,21 @@ const SiteEditor = () => {
   const [uiTextsForm, setUiTextsForm] = useState(useStore(state => state.siteConfig.uiTexts));
   const [heroForm, setHeroForm] = useState(heroConfig);
   const [footerForm, setFooterForm] = useState(footerConfig);
-  const [waForm, setWaForm] = useState(whatsappNumber);
+  const [waForm, setWaForm] = useState({ number: whatsappNumber, message: defaultWhatsappMessage });
   const [isSaved, setIsSaved] = useState(true);
   const [expandedCollection, setExpandedCollection] = useState(null);
+
+  React.useEffect(() => {
+    if (businessSettings && activeTab === 'WHATSAPP') {
+      // Solo actualiza si no hay cambios sin guardar
+      if (isSaved) {
+        setWaForm({
+          number: businessSettings.whatsappNumber || '',
+          message: businessSettings.defaultWhatsappMessage || ''
+        });
+      }
+    }
+  }, [businessSettings, isSaved, activeTab]);
 
   const updateBrandConfig = useStore(state => state.updateBrandConfig);
   const updateUiTexts = useStore(state => state.updateUiTexts);
@@ -52,8 +74,8 @@ const SiteEditor = () => {
     setIsSaved(false);
   };
 
-  const handleWaChange = (value) => {
-    setWaForm(value);
+  const handleWaChange = (field, value) => {
+    setWaForm(prev => ({ ...prev, [field]: value }));
     setIsSaved(false);
   };
 
@@ -62,7 +84,13 @@ const SiteEditor = () => {
     if (activeTab === 'TEXTS') updateUiTexts(uiTextsForm);
     if (activeTab === 'HERO') updateHeroConfig(heroForm);
     if (activeTab === 'FOOTER') updateFooterConfig(footerForm);
-    if (activeTab === 'WHATSAPP') updateWhatsappNumber(waForm);
+    if (activeTab === 'WHATSAPP') {
+      updateBusinessSettings({
+        ...businessSettings,
+        whatsappNumber: waForm.number,
+        defaultWhatsappMessage: waForm.message
+      });
+    }
     setIsSaved(true);
   };
 
@@ -110,10 +138,6 @@ const SiteEditor = () => {
     }
 
     if (activeTab === 'HERO') {
-      const configuredProducts = heroForm.carouselProducts?.map(id => products.find(p => p.id === id)).filter(Boolean) || [];
-      const previewProducts = configuredProducts.length > 0 ? configuredProducts : products.filter(p => p.isNew);
-      const previewProduct = previewProducts[0];
-
       return (
         <div className="absolute inset-0 bg-primary flex flex-col p-6 overflow-hidden">
           <div className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity" style={{ backgroundImage: `url(${heroForm.backgroundImage})` }} />
@@ -126,22 +150,6 @@ const SiteEditor = () => {
             <div>
               <button className="border border-white/40 text-white text-[8px] tracking-widest px-3 py-1">{heroForm.ctaLabel}</button>
             </div>
-            
-            {/* Miniature Carousel Preview */}
-            {previewProduct && (
-              <div className="absolute bottom-4 right-4 w-32 bg-[#16110f] border border-white/5 shadow-2xl flex flex-col overflow-hidden">
-                <div className="w-full h-[2px] bg-white/10 relative">
-                  <div className="absolute top-0 left-0 h-full w-1/3 bg-accent" />
-                </div>
-                <div className="w-full aspect-[5/4] bg-white/5 relative">
-                  <img src={previewProduct.image} alt={previewProduct.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="p-2">
-                  <h4 className="text-white font-display text-[10px] truncate">{previewProduct.name}</h4>
-                  <span className="text-white/40 text-[8px] block mt-1">1 / {previewProducts.length}</span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       );
@@ -193,8 +201,10 @@ const SiteEditor = () => {
                <span className="text-[10px] uppercase tracking-widest font-medium">WhatsApp</span>
              </div>
            </div>
-           <div className="absolute top-4 right-4 bg-white shadow p-3 rounded text-xs border border-black/10">
-             Links to: <br/><strong>https://wa.me/{waForm}</strong>
+           <div className="absolute top-4 right-4 bg-white shadow p-3 rounded text-xs border border-black/10 max-w-[250px]">
+             <div className="font-medium mb-1">WhatsApp Preview:</div>
+             <div className="mb-2"><strong>https://wa.me/{waForm.number}</strong></div>
+             <div className="italic text-[10px] text-gray-500 line-clamp-3">{waForm.message}</div>
            </div>
         </div>
       );
@@ -202,9 +212,9 @@ const SiteEditor = () => {
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 h-full p-2 sm:p-0">
+    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 h-full p-2 sm:p-0">
       {/* Editor Panel */}
-      <div className="flex-1 xl:max-w-2xl flex flex-col">
+      <div className="flex-1 lg:max-w-2xl flex flex-col">
         <div className="mb-6 lg:mb-8">
           <h2 className="text-2xl lg:text-3xl font-display mb-1 lg:mb-2">Site Editor</h2>
           <span className="text-[10px] lg:text-xs tracking-widest text-primary/40 uppercase">CUSTOMIZE STOREFRONT PAGES</span>
@@ -236,15 +246,26 @@ const SiteEditor = () => {
               addCollection={handleAddCollection}
               deleteCollection={deleteCatalogItem}
               updateCollection={updateCatalogItem}
+              reorderCollections={(newOrder) => reorderCatalogItems('collections', newOrder)}
               expandedCollection={expandedCollection}
               setExpandedCollection={setExpandedCollection}
             />
           )}
         </div>
+
+        {/* Save button - mobile only (desktop has it in the preview panel) */}
+        {activeTab !== 'COLLECTIONS' && (
+          <button 
+            onClick={handleSaveAll}
+            className={`lg:hidden mt-6 w-full py-4 text-xs tracking-widest uppercase transition-colors flex justify-center items-center ${isSaved ? 'bg-[#e5f5e0] text-[#0b4f37]' : 'bg-[#fbf5e6] text-accent hover:bg-accent hover:text-white'}`}
+          >
+            {isSaved ? 'SAVED ✓' : 'SAVE CHANGES'}
+          </button>
+        )}
       </div>
 
-      {/* Live Preview Panel */}
-      <div className="w-full xl:w-96 flex flex-col shrink-0 sticky top-12 h-[500px] xl:h-full mt-8 xl:mt-0">
+      {/* Live Preview Panel - hidden on mobile */}
+      <div className="hidden lg:flex w-full lg:w-96 flex-col shrink-0 sticky top-12 h-[500px] lg:h-[calc(100vh-160px)] mt-8 lg:mt-0">
         <div className="flex items-center justify-between mb-4">
           <span className="text-[10px] lg:text-xs tracking-widest text-primary/60 uppercase flex items-center"><span className="w-2 h-2 bg-accent rounded-full mr-2"></span> LIVE PREVIEW</span>
           {!isSaved && activeTab !== 'COLLECTIONS' && <span className="text-[10px] tracking-widest text-accent uppercase">● Unsaved</span>}

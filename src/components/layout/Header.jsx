@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
 const ScrollNavLink = ({ to, children, className = '' }) => {
@@ -56,6 +56,8 @@ const Header = () => {
   const navigate = useNavigate();
   const collections = useStore(state => state.catalogs.collections);
   const brandConfig = useStore(state => state.siteConfig.brand);
+  const isAuthenticated = useStore(state => state.isAuthenticated);
+  const user = useStore(state => state.user);
   const [activeDropdown, setActiveDropdown] = useState(null);
   let timeoutId = null;
 
@@ -77,7 +79,7 @@ const Header = () => {
         {/* Logo */}
         <Link to="/" className="shrink-0 flex items-center space-x-3">
           {(brandConfig.displayMode === 'LOGO' || brandConfig.displayMode === 'BOTH') && brandConfig.logoUrl && (
-            <img src={brandConfig.logoUrl} alt="Logo" className="h-10 object-contain" />
+            <img src={brandConfig.logoUrl} alt="Logo" width="160" height="40" className="h-10 w-auto object-contain" />
           )}
           {(brandConfig.displayMode === 'TEXT' || brandConfig.displayMode === 'BOTH') && (
             <span className="text-3xl font-display tracking-widest uppercase text-primary">
@@ -117,32 +119,44 @@ const Header = () => {
         
         {/* Actions */}
         <div className="flex items-center space-x-4">
-          <button className="text-primary hover:text-accent transition-colors">
+          <button aria-label="Search" className="text-primary hover:text-accent transition-colors">
             <Search size={20} />
           </button>
           
-          {useStore(state => state.isAuthenticated) ? (
-            <button 
+          {/* Admin Panel Return Button - only visible for admin users */}
+          {isAuthenticated && user?.role === 'admin' && (
+            <button
               onClick={() => navigate('/admin')}
-              className="text-xs font-medium tracking-widest border border-primary/20 px-4 py-2 hover:bg-primary hover:text-white transition-colors"
+              className="hidden md:flex items-center space-x-2 text-[10px] tracking-[0.2em] uppercase bg-primary text-white px-4 py-2 hover:bg-accent transition-colors"
             >
-              MY ACCOUNT
+              <span>&#9964;</span>
+              <span>Admin Panel</span>
             </button>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <button 
-                onClick={() => navigate('/admin/login')}
-                className="text-xs font-medium tracking-widest px-3 py-2 text-primary hover:text-accent transition-colors uppercase"
-              >
-                Log In
-              </button>
-              <button 
-                onClick={() => navigate('/register')}
-                className="text-xs font-medium tracking-widest border border-primary/20 px-4 py-2 hover:bg-primary hover:text-white transition-colors uppercase"
-              >
-                Sign Up
-              </button>
-            </div>
+          )}
+
+          {/* Login/Profile for non-admin users */}
+          {(!isAuthenticated || (isAuthenticated && user?.role !== 'admin')) && (
+            isAuthenticated ? (
+              <Link to="/profile" className="hidden md:flex items-center space-x-2 text-[10px] tracking-[0.2em] uppercase text-primary/60 hover:text-primary transition-colors">
+                <User size={14} />
+                <span>Profile</span>
+              </Link>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="text-xs font-medium tracking-widest px-3 py-2 text-primary hover:text-accent transition-colors uppercase"
+                >
+                  Log In
+                </button>
+                <button 
+                  onClick={() => navigate('/register')}
+                  className="text-xs font-medium tracking-widest border border-primary/20 px-4 py-2 hover:bg-primary hover:text-white transition-colors uppercase"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )
           )}
         </div>
       </div>
