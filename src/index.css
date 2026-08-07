@@ -14,8 +14,8 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-background text-primary font-sans antialiased;
+  html, body {
+    @apply bg-background text-primary font-sans antialiased overflow-x-hidden w-full;
   }
 
   h1,
