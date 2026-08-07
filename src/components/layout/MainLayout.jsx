@@ -20,6 +20,7 @@ const MainLayout = () => {
       autoRaf: true,
       lerp: 0.08,
       smoothWheel: true,
+      syncToNative: true,
     });
 
     return () => {
