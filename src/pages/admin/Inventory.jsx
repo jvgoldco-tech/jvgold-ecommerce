@@ -4,7 +4,7 @@ import { Plus, Edit2, Trash2, X, Search, Image as ImageIcon, ScanLine, LayoutDas
 import ImageCropper from '../../components/ui/ImageCropper';
 import { TextInputWithCount } from '../../components/ui/InputWithCount';
 
-const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
+const ProductFormModal = ({ isOpen, onClose, product, onSave, saveStatus }) => {
   const catalogs = useStore(state => state.catalogs);
   const collections = catalogs.collections;
   
@@ -152,6 +152,12 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
                 <label className="text-[10px] tracking-widest uppercase text-primary/60 mb-2 block">Current Stock *</label>
                 <input required type="number" name="stockCurrent" value={formData.stockCurrent} onChange={handleChange} className="w-full border border-black/20 px-4 py-2 text-sm focus:border-primary focus:outline-none" />
               </div>
+
+              <div>
+                <label className="text-[10px] tracking-widest uppercase text-primary/60 mb-2 block">Low Stock Threshold *</label>
+                <input required type="number" name="stockMinimum" value={formData.stockMinimum} onChange={handleChange} className="w-full border border-black/20 px-4 py-2 text-sm focus:border-primary focus:outline-none" />
+                <span className="text-[8px] text-gray-400 mt-1 block">Alert when stock falls to or below this number.</span>
+              </div>
               
               <div>
                 <label className="text-[10px] tracking-widest uppercase text-primary/60 mb-2 block">Mark as "New Arrival"</label>
@@ -162,8 +168,10 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
         </form>
 
         <div className="p-6 border-t border-black/10 bg-[#fbfbfb] flex justify-end space-x-4">
-          <button onClick={onClose} className="px-6 py-3 border border-black/20 text-xs tracking-widest uppercase hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-accent">Cancel</button>
-          <button onClick={handleSubmit} className="px-6 py-3 bg-primary text-white text-xs tracking-widest uppercase hover:bg-black focus:outline-none focus:ring-2 focus:ring-accent">Save Product</button>
+          <button onClick={onClose} disabled={saveStatus !== 'IDLE'} className="px-6 py-3 border border-black/20 text-xs tracking-widest uppercase hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50">Cancel</button>
+          <button onClick={handleSubmit} disabled={saveStatus !== 'IDLE'} className={`px-6 py-3 text-white text-xs tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${saveStatus === 'SAVED' ? 'bg-[#0b4f37]' : 'bg-primary hover:bg-black'} disabled:opacity-80`}>
+            {saveStatus === 'SAVING' ? 'Saving...' : saveStatus === 'SAVED' ? 'Saved ✓' : 'Save Product'}
+          </button>
         </div>
       </div>
     </div>
@@ -176,6 +184,7 @@ const Inventory = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('IDLE'); // IDLE, SAVING, SAVED
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -215,13 +224,22 @@ const Inventory = () => {
   }, [products, searchQuery, filterCategory, filterStatus, filterLocation, sortBy]);
 
   const handleSave = (productData) => {
+    setSaveStatus('SAVING');
     if (editingProduct) {
       updateProduct(editingProduct.id, productData);
     } else {
       addProduct(productData);
     }
-    setIsModalOpen(false);
-    setEditingProduct(null);
+    
+    // Simulate network delay for user feedback
+    setTimeout(() => {
+      setSaveStatus('SAVED');
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setEditingProduct(null);
+        setSaveStatus('IDLE');
+      }, 1000);
+    }, 800);
   };
 
   const countAll = products.length;
@@ -373,17 +391,27 @@ const Inventory = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-gray-900 mb-1 leading-tight">{product.name}</h4>
-                    <div className="flex items-center text-[11px] text-gray-500 space-x-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
+                      <span className="font-medium text-black">SKU: {product.sku}</span>
+                      <span>•</span>
                       <span>{product.category}</span>
                       <span>•</span>
-                      <span>Stock: {product.stockCurrent} Units</span>
-                      {isLowStock && <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.6)]"></span>}
+                      <span>{product.gender}</span>
+                      <span>•</span>
+                      <span>{(product.materials || []).join(', ')}</span>
+                      <span>•</span>
+                      <span>{product.color}</span>
+                    </div>
+                    <div className="flex items-center gap-x-3 mt-1 text-[11px]">
+                      <span className="text-black font-medium">${Number(product.priceSale).toLocaleString()}</span>
+                      <span className="text-gray-400">Stock: {product.stockCurrent}</span>
+                      {isLowStock && <span className="text-red-500 font-bold flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></span>Low Stock (Min: {product.stockMinimum})</span>}
                     </div>
                   </div>
                 </div>
 
                 {/* Vertical Divider */}
-                <div className="hidden md:block w-px h-10 bg-gray-100 mx-6"></div>
+                <div className="hidden md:block w-px h-12 bg-gray-100 mx-4"></div>
 
                 {/* Meta 1: Date */}
                 <div className="hidden md:block w-1/4 mb-4 md:mb-0">
@@ -402,18 +430,14 @@ const Inventory = () => {
                   <span className="text-xs font-medium text-gray-800">{product.location || 'Warehouse A'}</span>
                 </div>
 
-                {/* Actions */}
-                <div className="w-full md:w-auto md:ml-auto flex items-center justify-end absolute top-4 right-4 md:relative md:top-auto md:right-auto">
-                  <div className="relative group">
-                    <button className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-100 text-gray-400 hover:text-black hover:border-gray-300 transition-colors">
-                      <span className="font-bold -translate-y-1">...</span>
-                    </button>
-                    {/* Hover menu for actions */}
-                    <div className="absolute right-0 top-full mt-1 bg-white shadow-lg border border-black/5 rounded-xl py-2 w-32 hidden group-hover:block z-10">
-                      <button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center"><Edit2 size={12} className="mr-2" /> Edit</button>
-                      <button onClick={() => deleteProduct(product.id)} className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 flex items-center"><Trash2 size={12} className="mr-2" /> Delete</button>
-                    </div>
-                  </div>
+                {/* Actions (Always Visible on Desktop) */}
+                <div className="w-full md:w-auto md:ml-auto flex items-center justify-end absolute top-4 right-4 md:relative md:top-auto md:right-auto space-x-2">
+                  <button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:text-primary hover:border-primary transition-colors bg-white shadow-sm" title="Edit Product">
+                    <Edit2 size={14} />
+                  </button>
+                  <button onClick={() => deleteProduct(product.id)} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-red-500 hover:text-white hover:bg-red-500 hover:border-red-500 transition-colors bg-white shadow-sm" title="Delete Product">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             );
@@ -427,6 +451,7 @@ const Inventory = () => {
           onClose={() => setIsModalOpen(false)}
           product={editingProduct}
           onSave={handleSave}
+          saveStatus={saveStatus}
         />
       )}
     </div>
